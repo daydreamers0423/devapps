@@ -4,8 +4,3 @@ plugins {
     alias(libs.plugins.android.library) apply false
 }
 
-buildscript {
-    dependencies {
-        classpath("com.google.gms:google-services:4.4.2")
-    }
-}

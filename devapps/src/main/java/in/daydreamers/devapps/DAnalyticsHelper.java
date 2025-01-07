@@ -34,8 +34,8 @@ import java.util.Locale;
 public class DAnalyticsHelper extends Application {
     private static volatile DAnalyticsHelper instance;
 
-    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "http://localhost:8080/loganalytics";
-    private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "http://localhost:8080/logusage";
+    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "http://127.0.0.1:5001/devapps-446507/us-central1/loganalytics";
+    private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "http://127.0.0.1:5001/devapps-446507/us-central1/logusage";
 
 
     // Private constructor to prevent direct instantiation
@@ -133,9 +133,9 @@ public class DAnalyticsHelper extends Application {
         }
 
         Map<String, Object> data = new HashMap<>();
-        data.put("screenName", screenName);
-        data.put("userId", userId);
-        data.put("appId", appId);
+        data.put("screenname", screenName);
+        data.put("userid", userId);
+        data.put("appid", appId);
         data.put("identity", getSHA1Fingerprint(this));
 
         try {
@@ -201,9 +201,9 @@ public class DAnalyticsHelper extends Application {
         }
 
         Map<String, Object> data = new HashMap<>();
-        data.put("userId", userId);
-        data.put("usageTime", usageTime);
-        data.put("appId", appId);
+        data.put("userid", userId);
+        data.put("usagetime", usageTime);
+        data.put("appid", appId);
         data.put("identity", getSHA1Fingerprint(this));
         try {
             callCloudFunction(data,CLOUD_FUNCTION_URL_LOG_USGAE);
