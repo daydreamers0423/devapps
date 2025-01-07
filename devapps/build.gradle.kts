@@ -17,7 +17,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
 
 
             proguardFiles(
@@ -40,26 +40,21 @@ android {
             withSourcesJar()
         }
     }
-    afterEvaluate {
-        publishing {
 
-            publications {
-                register<MavenPublication>("release") {
-                    groupId = "in.daydreamers.devapps"
-                    artifactId = "in.daydreamers"
-                    version = "1.0"
+    }
 
-                    afterEvaluate {
-                        from(components["release"])
-                    }
-                }
+publishing {
+
+    publications {
+        register<MavenPublication>("release") {
+
+            afterEvaluate {
+                from(components["release"])
             }
         }
     }
 }
-
 dependencies {
-
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.firebase.functions)
