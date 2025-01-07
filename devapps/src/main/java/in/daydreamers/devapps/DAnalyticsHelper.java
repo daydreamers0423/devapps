@@ -8,43 +8,81 @@ import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.http.json.JsonHttpContent;
+import com.google.api.client.json.gson.GsonFactory;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.functions.FirebaseFunctions;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.util.Log;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 
 public class DAnalyticsHelper extends Application {
     private static volatile DAnalyticsHelper instance;
-    private FirebaseFunctions firebaseFunctions;
-    private String apiKey;
+
+    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "http://localhost:8080/loganalytics";
+    private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "http://localhost:8080/logusage";
 
 
     // Private constructor to prevent direct instantiation
-    private DAnalyticsHelper(String apiKey) {
-        this.apiKey = apiKey;
-        FirebaseApp.initializeApp(this);
-        this.firebaseFunctions = FirebaseFunctions.getInstance();
+    private DAnalyticsHelper() {
+
+
     }
 
     // Thread-safe method to get the singleton instance
-    public static DAnalyticsHelper getInstance(String apiKey) {
+    public static DAnalyticsHelper getInstance() {
         if (instance == null) {
             synchronized (DAnalyticsHelper.class) {
                 if (instance == null) {
-                    instance = new DAnalyticsHelper(apiKey);
+                    instance = new DAnalyticsHelper();
                 }
             }
         }
         return instance;
     }
 
+    public static void callCloudFunction(@NonNull Map data,@NonNull String url) throws IOException {
+        // Create an HTTP transport
+        HttpTransport transport = new NetHttpTransport();
+
+        // Create a request factory
+        HttpRequestFactory requestFactory = transport.createRequestFactory();
+
+        // Prepare the JSON payload
+        JsonHttpContent content = new JsonHttpContent(new GsonFactory(),
+                data);
+
+        // Create the POST request
+        HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(url), content);
+
+        // Execute the request
+        HttpResponse response = request.execute();
+
+        // Handle the response
+        if (response.isSuccessStatusCode()) {
+            String responseBody = response.parseAsString();
+            System.out.println("Response: " + responseBody);
+        } else {
+            System.err.println();
+        }
+    }
+
+    // Helper class to create JSON payload
 
 
     public static String getSHA1Fingerprint(Context context) {
@@ -88,31 +126,28 @@ public class DAnalyticsHelper extends Application {
 
 
     // Method to log an event with API key validation
-    public void logScreenView(String screenName, String userId) {
-        if (apiKey == null || apiKey.isEmpty()) {
-            System.err.println("API key is required to log events.");
+    public void logScreenView(@NonNull String screenName, @NonNull String userId,@NonNull String appId) {
+        if (appId.isEmpty()) {
+            Log.e("DevApps","App ID is required to log events.");
             return;
         }
 
         Map<String, Object> data = new HashMap<>();
         data.put("screenName", screenName);
         data.put("userId", userId);
-        data.put("apiKey", apiKey);
-        data.put("key", getSHA1Fingerprint(this));
-        firebaseFunctions
-                .getHttpsCallable("logScreenView")
-                .call(data)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        System.out.println("Screen view logged successfully.");
-                    } else {
-                        System.err.println("Error logging screen view: " + task.getException().getMessage());
-                    }
-                });
+        data.put("appId", appId);
+        data.put("identity", getSHA1Fingerprint(this));
+
+        try {
+            callCloudFunction(data,CLOUD_FUNCTION_URL_LOG_ANALYTICS);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     // Method to monitor app usage with API key validation
-    public void monitorAppUsage(Application application, String userId) {
+    public void monitorAppUsage(Application application,@NonNull String userId,@NonNull String appId ) {
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             private int activityReferences = 0;
             private boolean isActivityChangingConfigurations = false;
@@ -134,7 +169,9 @@ public class DAnalyticsHelper extends Application {
             public void onActivityResumed(@NonNull Activity activity) {}
 
             @Override
-            public void onActivityPaused(@NonNull Activity activity) {}
+            public void onActivityPaused(@NonNull Activity activity) {
+
+            }
 
             @Override
             public void onActivityStopped(@NonNull Activity activity) {
@@ -145,7 +182,7 @@ public class DAnalyticsHelper extends Application {
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
                     long usageTime = endTime - startTime; // Time in milliseconds
-                    logAppUsageTime(userId, usageTime);
+                    logAppUsageTime(userId, usageTime,appId);
                 }
             }
 
@@ -157,27 +194,23 @@ public class DAnalyticsHelper extends Application {
         });
     }
 
-    private void logAppUsageTime(String userId, long usageTime) {
-        if (apiKey == null || apiKey.isEmpty()) {
-            System.err.println("API key is required to log events.");
+    private void logAppUsageTime(@NonNull String userId,@NonNull long usageTime,@NonNull String appId) {
+        if ( appId.isEmpty()) {
+            Log.e("devapps","App Id is required to log events.");
             return;
         }
 
         Map<String, Object> data = new HashMap<>();
         data.put("userId", userId);
         data.put("usageTime", usageTime);
-        data.put("apiKey", apiKey);
-        data.put("key", getSHA1Fingerprint(this));
-        firebaseFunctions
-                .getHttpsCallable("logAppUsageTime")
-                .call(data)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        System.out.println("App usage time logged successfully.");
-                    } else {
-                        System.err.println("Error logging app usage time: " + task.getException().getMessage());
-                    }
-                });
+        data.put("appId", appId);
+        data.put("identity", getSHA1Fingerprint(this));
+        try {
+            callCloudFunction(data,CLOUD_FUNCTION_URL_LOG_USGAE);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 }
