@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.library)
-    id("com.google.gms.google-services")
     `maven-publish`
 }
 
@@ -31,12 +30,18 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    packaging {
+        resources {
+            excludes += "META-INF/DEPENDENCIES"
+        }
+    }
     afterEvaluate {
         publishing {
             publications {
                 artifacts{
                     group = "in.daydreamers.devapps"
                     version = "1.0"
+
                 }
             }
         }
@@ -51,7 +56,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    implementation("com.google.http-client:google-http-client-android:1.43.3")
-    implementation("com.google.http-client:google-http-client-gson:1.43.3") // Optional for JSON parsing
+    implementation(libs.google.http.client.android)
+    implementation(libs.google.http.client.gson) // Optional for JSON parsing
 
 }
