@@ -35,13 +35,23 @@ android {
             excludes += "META-INF/DEPENDENCIES"
         }
     }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
     afterEvaluate {
         publishing {
+
             publications {
-                artifacts{
-                    group = "in.daydreamers.devapps"
+                register<MavenPublication>("release") {
+                    groupId = "in.daydreamers.devapps"
+                    artifactId = "in.daydreamers"
                     version = "1.0"
 
+                    afterEvaluate {
+                        from(components["release"])
+                    }
                 }
             }
         }
