@@ -18,6 +18,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            multiDexEnabled = true
 
 
             proguardFiles(
@@ -30,11 +31,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    packaging {
-        resources {
-            excludes += "META-INF/DEPENDENCIES"
-        }
-    }
+
     publishing {
         singleVariant("release") {
             withSourcesJar()
