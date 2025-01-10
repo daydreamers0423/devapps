@@ -1,17 +1,29 @@
+import java.util.Properties
 plugins {
     alias(libs.plugins.android.library)
     `maven-publish`
 }
 
+val localPropertiesFile = rootProject.file("local.properties")
+val localProperties = Properties()
+
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 android {
     namespace = "in.daydreamers.devapps"
     compileSdk = 34
-
+    buildFeatures {
+        buildConfig = true
+    }
     defaultConfig {
         minSdk = 24
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+        buildConfigField("String", "logurl", "http://192.168.130.226:5001/devapps-446507/us-central1/loganalytics")
+        buildConfigField("String", "usageurl", "http://192.168.130.226:5001/devapps-446507/us-central1/logusage")
     }
 
 

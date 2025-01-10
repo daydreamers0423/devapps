@@ -2,6 +2,7 @@ package in.daydreamers.devapps;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.SharedPreferences;
 import android.content.pm.Signature;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -38,8 +39,8 @@ public class DAnalyticsHelper extends Application {
     private static volatile DAnalyticsHelper instance;
     private ExecutorService executorService;
 
-    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "http://192.168.130.226:5001/devapps-446507/us-central1/loganalytics";
-    private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "http://192.168.130.226:5001/devapps-446507/us-central1/logusage";
+    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = BuildConfig.logurl;
+    private static final String CLOUD_FUNCTION_URL_LOG_USGAE = BuildConfig.usageurl;
 
 
     // Private constructor to prevent direct instantiation
@@ -169,35 +170,47 @@ public class DAnalyticsHelper extends Application {
 
             @Override
             public void onActivityStarted(@NonNull Activity activity) {
-                if (activityReferences == 0 && !isActivityChangingConfigurations) {
-                    // App enters foreground
+
                     startTime = SystemClock.elapsedRealtime();
+                SharedPreferences sharedPreferences = getSharedPreferences("devapps", MODE_PRIVATE);
+                int saves = sharedPreferences.getInt("saves",0);
+                if(saves >= 10)
+                {
+                    logAppUsageTime(userId, sharedPreferences.getLong("usage",0),appId,getSHA1Fingerprint(activity.getApplicationContext()));
                 }
-                activityReferences = activityReferences+1;
-                Log.i("activityReferences=","onActivityStarted="+activityReferences);
+
+
+
             }
 
             @Override
             public void onActivityResumed(@NonNull Activity activity) {
-                activityReferences = activityReferences+1;
+
                 startTime = SystemClock.elapsedRealtime();
-                Log.i("onActivityResumed=","onActivityResumed="+activityReferences);
+
+
+
             }
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
 
+                SharedPreferences sharedPreferences = getSharedPreferences("devapps", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
 
-                activityReferences = activityReferences > 0 ?activityReferences-1:activityReferences;
-                isActivityChangingConfigurations = activity.isChangingConfigurations();
-                Log.i("activityReferences=","onActivityPaused="+activityReferences);
-                if (/*activityReferences == 0 &&*/ !isActivityChangingConfigurations) {
+
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
                     long usageTime = endTime - startTime; // Time in milliseconds
-                    Log.i("onActivityPaused","onActivityPaused###Time="+usageTime);
-                    logAppUsageTime(userId, usageTime,appId,getSHA1Fingerprint(activity.getApplicationContext()));
-                }
+                    long savedUsage = sharedPreferences.getLong("usage",0);
+                    int saves = sharedPreferences.getInt("saves",0);
+                    saves = saves + 1;
+                    editor.putLong("usage",savedUsage + usageTime);
+                    editor.putInt("saves",saves);
+
+
+                    editor.apply();
+
             }
 
             @Override
