@@ -127,17 +127,17 @@ public class DAnalyticsHelper extends Application {
 
 
     // Method to log an event with API key validation
-    public void logScreenView(@NonNull String screenName, @NonNull String userId,@NonNull String appId) {
+    public void logScreenView(Application application,@NonNull String screenName, @NonNull String userId,@NonNull String appId) {
         if (appId.isEmpty()) {
             Log.e("DevApps","App ID is required to log events.");
             return;
         }
-        Log.e("logScreenView","in logScreenView...####");
+        Log.e("logScreenView","in logScreenView...####"+application.toString());
         Map<String, Object> data = new HashMap<>();
         data.put("screenname", screenName);
         data.put("userid", userId);
         data.put("appid", appId);
-        data.put("identity", getSHA1Fingerprint(this));
+        data.put("identity", getSHA1Fingerprint(application.getApplicationContext()));
 
         try {
             Log.e("identity=", Objects.requireNonNull(data.get("identity")).toString());
@@ -150,7 +150,7 @@ public class DAnalyticsHelper extends Application {
 
     // Method to monitor app usage with API key validation
     public void monitorAppUsage(Application application,@NonNull String userId,@NonNull String appId ) {
-        Log.e("monitorAppUsage",application.toString());
+
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             private int activityReferences = 0;
             private boolean isActivityChangingConfigurations = false;
