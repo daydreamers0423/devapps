@@ -31,9 +31,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DAnalyticsHelper extends Application {
     private static volatile DAnalyticsHelper instance;
+    private ExecutorService executorService;
 
     private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "http://192.168.130.226:5001/devapps-446507/us-central1/loganalytics";
     private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "http://192.168.130.226:5001/devapps-446507/us-central1/logusage";
@@ -132,6 +135,7 @@ public class DAnalyticsHelper extends Application {
             Log.e("DevApps","App ID is required to log events.");
             return;
         }
+        executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
         Log.e("logScreenView","in logScreenView...####"+application.toString());
         Map<String, Object> data = new HashMap<>();
         data.put("screenname", screenName);
@@ -139,12 +143,17 @@ public class DAnalyticsHelper extends Application {
         data.put("appid", appId);
         data.put("identity", getSHA1Fingerprint(application.getApplicationContext()));
 
-        try {
+
             Log.e("identity=", Objects.requireNonNull(data.get("identity")).toString());
-            callCloudFunction(data,CLOUD_FUNCTION_URL_LOG_ANALYTICS);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            executorService.execute(()-> {
+                try {
+                callCloudFunction(data,CLOUD_FUNCTION_URL_LOG_ANALYTICS);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+
 
     }
 
@@ -202,18 +211,20 @@ public class DAnalyticsHelper extends Application {
             Log.e("devapps","App Id is required to log events.");
             return;
         }
-
+        executorService = executorService == null ? Executors.newSingleThreadExecutor():executorService;
         Map<String, Object> data = new HashMap<>();
         data.put("userid", userId);
         data.put("usagetime", usageTime);
         data.put("appid", appId);
         data.put("identity", getSHA1Fingerprint(this));
-        try {
-            callCloudFunction(data,CLOUD_FUNCTION_URL_LOG_USGAE);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        executorService.execute(()-> {
+            try {
 
+                callCloudFunction(data, CLOUD_FUNCTION_URL_LOG_USGAE);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
 }
