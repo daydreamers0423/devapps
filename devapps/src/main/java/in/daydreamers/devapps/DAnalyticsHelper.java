@@ -174,19 +174,23 @@ public class DAnalyticsHelper extends Application {
                     startTime = SystemClock.elapsedRealtime();
                 }
                 activityReferences = activityReferences+1;
+                Log.i("activityReferences=","onActivityStarted="+activityReferences);
             }
 
             @Override
-            public void onActivityResumed(@NonNull Activity activity) {}
+            public void onActivityResumed(@NonNull Activity activity) {
+                activityReferences = activityReferences+1;
+                Log.i("onActivityResumed=","onActivityResumed="+activityReferences);
+            }
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
 
-                Log.i( "onActivityPaused","onActivityPaused###"+isActivityChangingConfigurations+"=ref="+activityReferences);
+
                 activityReferences = activityReferences-1;
                 isActivityChangingConfigurations = activity.isChangingConfigurations();
-                Log.i( "onActivityPaused","onActivityPaused###"+isActivityChangingConfigurations+"=ref="+activityReferences);
-                if (activityReferences == 0 && !isActivityChangingConfigurations) {
+                Log.i("activityReferences=","onActivityPaused="+activityReferences);
+                if (/*activityReferences == 0 &&*/ !isActivityChangingConfigurations) {
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
                     long usageTime = endTime - startTime; // Time in milliseconds
