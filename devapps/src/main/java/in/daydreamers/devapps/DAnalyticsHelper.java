@@ -150,6 +150,7 @@ public class DAnalyticsHelper extends Application {
 
     // Method to monitor app usage with API key validation
     public void monitorAppUsage(Application application,@NonNull String userId,@NonNull String appId ) {
+        Log.e("monitorAppUsage",application.toString());
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             private int activityReferences = 0;
             private boolean isActivityChangingConfigurations = false;
