@@ -136,7 +136,6 @@ public class DAnalyticsHelper extends Application {
             return;
         }
         executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
-        Log.e("logScreenView","in logScreenView...####"+application.toString());
         Map<String, Object> data = new HashMap<>();
         data.put("screenname", screenName);
         data.put("userid", userId);
@@ -144,7 +143,7 @@ public class DAnalyticsHelper extends Application {
         data.put("identity", getSHA1Fingerprint(application.getApplicationContext()));
 
 
-            Log.e("identity=", Objects.requireNonNull(data.get("identity")).toString());
+
             executorService.execute(()-> {
                 try {
                 callCloudFunction(data,CLOUD_FUNCTION_URL_LOG_ANALYTICS);
@@ -183,19 +182,21 @@ public class DAnalyticsHelper extends Application {
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
 
-            }
-
-            @Override
-            public void onActivityStopped(@NonNull Activity activity) {
                 activityReferences--;
                 isActivityChangingConfigurations = activity.isChangingConfigurations();
-
+                Log.i("onActivityPaused","onActivityPaused###"+isActivityChangingConfigurations);
                 if (activityReferences == 0 && !isActivityChangingConfigurations) {
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
                     long usageTime = endTime - startTime; // Time in milliseconds
+                    Log.i("onActivityPaused","onActivityPaused###Time="+usageTime);
                     logAppUsageTime(userId, usageTime,appId);
                 }
+            }
+
+            @Override
+            public void onActivityStopped(@NonNull Activity activity) {
+
             }
 
             @Override
