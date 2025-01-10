@@ -173,7 +173,7 @@ public class DAnalyticsHelper extends Application {
                     // App enters foreground
                     startTime = SystemClock.elapsedRealtime();
                 }
-                activityReferences++;
+                activityReferences = activityReferences+1;
             }
 
             @Override
@@ -182,15 +182,16 @@ public class DAnalyticsHelper extends Application {
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
 
-                activityReferences--;
+                Log.i( "onActivityPaused","onActivityPaused###"+isActivityChangingConfigurations+"=ref="+activityReferences);
+                activityReferences = activityReferences-1;
                 isActivityChangingConfigurations = activity.isChangingConfigurations();
-                Log.i("onActivityPaused","onActivityPaused###"+isActivityChangingConfigurations+"=ref="+activityReferences);
-                if (/*activityReferences == 0 &&*/ !isActivityChangingConfigurations) {
+                Log.i( "onActivityPaused","onActivityPaused###"+isActivityChangingConfigurations+"=ref="+activityReferences);
+                if (activityReferences == 0 && !isActivityChangingConfigurations) {
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
                     long usageTime = endTime - startTime; // Time in milliseconds
                     Log.i("onActivityPaused","onActivityPaused###Time="+usageTime);
-                    logAppUsageTime(userId, usageTime,appId);
+                    logAppUsageTime(userId, usageTime,appId,getSHA1Fingerprint(activity.getApplicationContext()));
                 }
             }
 
@@ -207,7 +208,7 @@ public class DAnalyticsHelper extends Application {
         });
     }
 
-    private void logAppUsageTime(@NonNull String userId,@NonNull long usageTime,@NonNull String appId) {
+    private void logAppUsageTime(@NonNull String userId,@NonNull long usageTime,@NonNull String appId,String... identity) {
         if ( appId.isEmpty()) {
             Log.e("devapps","App Id is required to log events.");
             return;
@@ -217,7 +218,7 @@ public class DAnalyticsHelper extends Application {
         data.put("userid", userId);
         data.put("usagetime", usageTime);
         data.put("appid", appId);
-        data.put("identity", getSHA1Fingerprint(this));
+        data.put("identity", identity != null ? identity[0] : getSHA1Fingerprint(this));
         executorService.execute(()-> {
             try {
 
