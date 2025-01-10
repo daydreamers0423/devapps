@@ -180,6 +180,7 @@ public class DAnalyticsHelper extends Application {
             @Override
             public void onActivityResumed(@NonNull Activity activity) {
                 activityReferences = activityReferences+1;
+                startTime = SystemClock.elapsedRealtime();
                 Log.i("onActivityResumed=","onActivityResumed="+activityReferences);
             }
 
@@ -187,7 +188,7 @@ public class DAnalyticsHelper extends Application {
             public void onActivityPaused(@NonNull Activity activity) {
 
 
-                activityReferences = activityReferences-1;
+                activityReferences = activityReferences > 0 ?activityReferences-1:activityReferences;
                 isActivityChangingConfigurations = activity.isChangingConfigurations();
                 Log.i("activityReferences=","onActivityPaused="+activityReferences);
                 if (/*activityReferences == 0 &&*/ !isActivityChangingConfigurations) {
