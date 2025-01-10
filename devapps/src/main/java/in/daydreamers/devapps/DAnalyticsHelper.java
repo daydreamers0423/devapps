@@ -184,8 +184,8 @@ public class DAnalyticsHelper extends Application {
 
                 activityReferences--;
                 isActivityChangingConfigurations = activity.isChangingConfigurations();
-                Log.i("onActivityPaused","onActivityPaused###"+isActivityChangingConfigurations);
-                if (activityReferences == 0 && !isActivityChangingConfigurations) {
+                Log.i("onActivityPaused","onActivityPaused###"+isActivityChangingConfigurations+"=ref="+activityReferences);
+                if (/*activityReferences == 0 &&*/ !isActivityChangingConfigurations) {
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
                     long usageTime = endTime - startTime; // Time in milliseconds
