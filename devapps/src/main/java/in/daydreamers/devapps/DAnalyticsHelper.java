@@ -172,7 +172,7 @@ public class DAnalyticsHelper extends Application {
             public void onActivityStarted(@NonNull Activity activity) {
 
                     startTime = SystemClock.elapsedRealtime();
-                SharedPreferences sharedPreferences = getSharedPreferences("devapps", MODE_PRIVATE);
+                SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 int saves = sharedPreferences.getInt("saves",0);
                 if(saves >= 10)
                 {
@@ -195,7 +195,7 @@ public class DAnalyticsHelper extends Application {
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
 
-                SharedPreferences sharedPreferences = getSharedPreferences("devapps", MODE_PRIVATE);
+                SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
 
 
