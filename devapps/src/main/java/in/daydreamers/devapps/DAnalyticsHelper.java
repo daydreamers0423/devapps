@@ -178,6 +178,7 @@ public class DAnalyticsHelper extends Application {
                 startTime = SystemClock.elapsedRealtime();
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 int saves = sharedPreferences.getInt("saves",1);
+                Log.i("saves....", String.valueOf(saves));
                 if(saves % 10 == 0)
                 {
                     logAppUsageTime(userId, sharedPreferences.getLong("usage",0),appId,getSHA1Fingerprint(activity.getApplicationContext()));
