@@ -203,7 +203,7 @@ public class DAnalyticsHelper extends Application {
 
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
-                    Log.i("onActivityPaused=","endTime="+startTime);
+                    Log.i("onActivityPaused=","endTime="+endTime);
                     long usageTime = endTime - startTime; // Time in milliseconds
                     long savedUsage = sharedPreferences.getLong("usage",0);
                     int saves = sharedPreferences.getInt("saves",1);
