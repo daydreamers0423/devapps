@@ -178,6 +178,7 @@ public class DAnalyticsHelper extends Application {
                 startTime = SystemClock.elapsedRealtime();
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 int saves = sharedPreferences.getInt("saves",1);
+                sharedPreferences.edit().putLong("usage",0).apply();
                 Log.i("saves....", "saves....="+String.valueOf(saves));
                 if(saves % 10 == 0)
                 {
