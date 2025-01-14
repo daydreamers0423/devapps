@@ -39,9 +39,14 @@ public class DAnalyticsHelper extends Application {
     private static volatile DAnalyticsHelper instance;
     private ExecutorService executorService;
 
-    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = BuildConfig.logurl;
-    private static final String CLOUD_FUNCTION_URL_LOG_USGAE = BuildConfig.usageurl;
+    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "/loganalytics";
+    private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "/logusage";
 
+    static {
+        System.loadLibrary("native-lib");
+    }
+
+    public native String getServiceUrl();
 
     // Private constructor to prevent direct instantiation
     private DAnalyticsHelper() {
@@ -147,7 +152,7 @@ public class DAnalyticsHelper extends Application {
 
             executorService.execute(()-> {
                 try {
-                callCloudFunction(data,CLOUD_FUNCTION_URL_LOG_ANALYTICS);
+                callCloudFunction(data,getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -161,8 +166,7 @@ public class DAnalyticsHelper extends Application {
     public void monitorAppUsage(Application application,@NonNull String userId,@NonNull String appId ) {
 
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-            private int activityReferences = 0;
-            private boolean isActivityChangingConfigurations = false;
+
             private long startTime;
 
             @Override
@@ -171,10 +175,10 @@ public class DAnalyticsHelper extends Application {
             @Override
             public void onActivityStarted(@NonNull Activity activity) {
 
-                    startTime = SystemClock.elapsedRealtime();
+                startTime = SystemClock.elapsedRealtime();
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
-                int saves = sharedPreferences.getInt("saves",0);
-                if(saves >= 10)
+                int saves = sharedPreferences.getInt("saves",1);
+                if(saves % 10 == 0)
                 {
                     logAppUsageTime(userId, sharedPreferences.getLong("usage",0),appId,getSHA1Fingerprint(activity.getApplicationContext()));
                 }
@@ -203,7 +207,7 @@ public class DAnalyticsHelper extends Application {
                     long endTime = SystemClock.elapsedRealtime();
                     long usageTime = endTime - startTime; // Time in milliseconds
                     long savedUsage = sharedPreferences.getLong("usage",0);
-                    int saves = sharedPreferences.getInt("saves",0);
+                    int saves = sharedPreferences.getInt("saves",1);
                     saves = saves + 1;
                     editor.putLong("usage",savedUsage + usageTime);
                     editor.putInt("saves",saves);
@@ -240,7 +244,7 @@ public class DAnalyticsHelper extends Application {
         executorService.execute(()-> {
             try {
 
-                callCloudFunction(data, CLOUD_FUNCTION_URL_LOG_USGAE);
+                callCloudFunction(data,getServiceUrl() + CLOUD_FUNCTION_URL_LOG_USGAE);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

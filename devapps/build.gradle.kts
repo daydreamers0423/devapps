@@ -25,6 +25,11 @@ android {
         buildConfigField("String", "logurl", "\"http://192.168.130.226:5001/devapps-446507/us-central1/loganalytics\"")
         buildConfigField("String", "usageurl", "\"http://192.168.130.226:5001/devapps-446507/us-central1/logusage\"")
     }
+    externalNativeBuild {
+        cmake {
+            path = file("./src/main/cpp/CMakeLists.txt")
+        }
+    }
 
 
     buildTypes {
