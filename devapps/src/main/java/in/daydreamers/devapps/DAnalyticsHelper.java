@@ -178,8 +178,6 @@ public class DAnalyticsHelper extends Application {
                 startTime = SystemClock.elapsedRealtime();
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 int saves = sharedPreferences.getInt("saves",1);
-
-                Log.i("saves....", "saves....="+String.valueOf(saves));
                 if(saves % 10 == 0)
                 {
                     logAppUsageTime(userId, sharedPreferences.getLong("usage",0),appId,getSHA1Fingerprint(activity.getApplicationContext()));
@@ -193,9 +191,7 @@ public class DAnalyticsHelper extends Application {
             public void onActivityResumed(@NonNull Activity activity) {
 
                 startTime = SystemClock.elapsedRealtime();
-
-
-
+                Log.i("onActivityResumed=","startTime="+startTime);
             }
 
             @Override
@@ -207,6 +203,7 @@ public class DAnalyticsHelper extends Application {
 
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
+                    Log.i("onActivityPaused=","endTime="+startTime);
                     long usageTime = endTime - startTime; // Time in milliseconds
                     long savedUsage = sharedPreferences.getLong("usage",0);
                     int saves = sharedPreferences.getInt("saves",1);
