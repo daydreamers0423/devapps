@@ -41,6 +41,9 @@ public class DAnalyticsHelper extends Application {
 
     private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "/loganalytics";
     private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "/logusage";
+    private static  Boolean ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
+
+    private static Boolean ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
     static {
         System.loadLibrary("native-lib");
@@ -189,13 +192,20 @@ public class DAnalyticsHelper extends Application {
 
             @Override
             public void onActivityResumed(@NonNull Activity activity) {
-
-                startTime = SystemClock.elapsedRealtime();
-                Log.i("onActivityResumed=","startTime="+startTime);
+                if(!ACTIVITY_EVENT_RESUMED) {
+                    ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
+                    ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
+                    startTime = SystemClock.elapsedRealtime();
+                    Log.i("onActivityResumed=", "startTime=" + startTime);
+                }
             }
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
+                if(!ACTIVITY_EVENT_PAUSED)
+                {
+                    ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
+                    ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
                 Log.i("activity=","activity="+activity.getLocalClassName());
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -214,6 +224,7 @@ public class DAnalyticsHelper extends Application {
 
                     editor.apply();
 
+            }
             }
 
             @Override
