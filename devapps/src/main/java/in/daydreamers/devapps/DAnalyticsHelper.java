@@ -181,8 +181,7 @@ public class DAnalyticsHelper extends Application {
                 startTime = SystemClock.elapsedRealtime();
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 int saves = sharedPreferences.getInt("saves",1);
-                sharedPreferences.edit().putLong("usage",0L).apply();
-                Log.i("usage==","usage"+sharedPreferences.getLong("usage",-1));
+
                 if(saves % 10 == 0)
                 {
                     logAppUsageTime(userId, sharedPreferences.getLong("usage",0),appId,getSHA1Fingerprint(activity.getApplicationContext()));
@@ -198,7 +197,7 @@ public class DAnalyticsHelper extends Application {
                     ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                     ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
                     startTime = SystemClock.elapsedRealtime();
-                    Log.i("onActivityResumed=", "startTime=" + startTime);
+
                 }
             }
 
@@ -208,19 +207,25 @@ public class DAnalyticsHelper extends Application {
                 {
                     ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
                     ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
-                Log.i("activity=","activity="+activity.getLocalClassName());
+
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
 
 
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
-                    Log.i("onActivityPaused=","endTime="+endTime);
+
                     long usageTime = endTime - startTime; // Time in milliseconds
                     long savedUsage = sharedPreferences.getLong("usage",0);
+                    Log.i("val==","endTime="+endTime);
+                    Log.i("val==","startTime="+startTime);
+                    Log.i("val==","usageTime="+usageTime);
+                    Log.i("val==","savedUsage="+savedUsage);
+
                     int saves = sharedPreferences.getInt("saves",1);
                     saves = saves + 1;
                     editor.putLong("usage",savedUsage + usageTime);
+                    Log.i("val==","usage="+sharedPreferences.getLong("usage",-1));
                     editor.putInt("saves",saves);
 
 
