@@ -179,6 +179,7 @@ public class DAnalyticsHelper extends Application {
             public void onActivityStarted(@NonNull Activity activity) {
 
                 startTime = SystemClock.elapsedRealtime();
+                Log.i("val==","startTime="+startTime);
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 int saves = sharedPreferences.getInt("saves",1);
 
@@ -197,7 +198,7 @@ public class DAnalyticsHelper extends Application {
                     ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                     ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
                     startTime = SystemClock.elapsedRealtime();
-
+                    Log.i("val==","startTimeR="+startTime);
                 }
             }
 
