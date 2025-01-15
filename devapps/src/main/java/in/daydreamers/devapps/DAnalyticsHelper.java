@@ -173,7 +173,10 @@ public class DAnalyticsHelper extends Application {
             private long startTime;
 
             @Override
-            public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {}
+            public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
+                startTime = SystemClock.elapsedRealtime();
+                Log.i("val==","startTimeC="+startTime);
+            }
 
             @Override
             public void onActivityStarted(@NonNull Activity activity) {
