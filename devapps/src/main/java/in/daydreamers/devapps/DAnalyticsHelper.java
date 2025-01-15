@@ -196,7 +196,7 @@ public class DAnalyticsHelper extends Application {
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
-
+                Log.i("activity=","activity="+activity.getLocalClassName());
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
 
