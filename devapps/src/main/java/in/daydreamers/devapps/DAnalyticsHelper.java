@@ -49,6 +49,7 @@ public class DAnalyticsHelper extends Application  {
     static long startTime;
     private static String userId;
     private static String appId;
+    private static Application application;
 
     static {
         System.loadLibrary("native-lib");
@@ -63,7 +64,7 @@ public class DAnalyticsHelper extends Application  {
     }
 
     // Thread-safe method to get the singleton instance
-    public static DAnalyticsHelper getInstance(String userId,String appId) {
+    public static DAnalyticsHelper getInstance(@NonNull String userId,@NonNull String appId,@NonNull Application application) {
         if (instance == null) {
             synchronized (DAnalyticsHelper.class) {
                 if (instance == null) {
@@ -74,6 +75,7 @@ public class DAnalyticsHelper extends Application  {
         startTime = SystemClock.elapsedRealtime();
         DAnalyticsHelper.userId = userId;
         DAnalyticsHelper.appId = appId;
+        DAnalyticsHelper.application = application;
 
         return instance;
     }
@@ -148,7 +150,7 @@ public class DAnalyticsHelper extends Application  {
 
 
     // Method to log an event with API key validation
-    public void logScreenView(Application application,@NonNull String screenName) {
+    public void logScreenView(@NonNull String screenName) {
         if (appId.isEmpty()) {
             Log.e("DevApps","App ID is required to log events.");
             return;
@@ -183,9 +185,9 @@ public class DAnalyticsHelper extends Application  {
     @Override
     public void onCreate() {
         super.onCreate();
-
+        Log.e("onCreate=",application.toString());
         // Register for Activity lifecycle events
-        registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+        application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
 
                                                @Override
                                                public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
