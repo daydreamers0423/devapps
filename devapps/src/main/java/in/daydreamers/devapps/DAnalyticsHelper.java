@@ -36,7 +36,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class DAnalyticsHelper extends Application implements Application.ActivityLifecycleCallbacks {
+public class DAnalyticsHelper extends Application  {
     private static volatile DAnalyticsHelper instance;
     private ExecutorService executorService;
 
@@ -180,83 +180,91 @@ public class DAnalyticsHelper extends Application implements Application.Activit
         final long[] startTime = {SystemClock.elapsedRealtime()};
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
 */
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
-            @Override
-            public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
+        // Register for Activity lifecycle events
+        registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
 
-                Log.i("val==","startTimeC="+ startTime);
-            }
+                                               @Override
+                                               public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
 
-            @Override
-            public void onActivityStarted(@NonNull Activity activity) {
+                                                   Log.i("val==", "startTimeC=" + startTime);
+                                               }
 
-                startTime = SystemClock.elapsedRealtime();
-                Log.i("val==","startTime="+ startTime);
-                SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
-                int saves = sharedPreferences.getInt("saves",1);
+                                               @Override
+                                               public void onActivityStarted(@NonNull Activity activity) {
 
-                if(saves % 10 == 0)
-                {
-                    logAppUsageTime(userId, sharedPreferences.getLong("usage",0),appId,getSHA1Fingerprint(activity.getApplicationContext()));
-                }
+                                                   startTime = SystemClock.elapsedRealtime();
+                                                   Log.i("val==", "startTime=" + startTime);
+                                                   SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
+                                                   int saves = sharedPreferences.getInt("saves", 1);
 
-
-
-            }
-
-            @Override
-            public void onActivityResumed(@NonNull Activity activity) {
-                if(!ACTIVITY_EVENT_RESUMED) {
-                    ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
-                    ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
-                    startTime = SystemClock.elapsedRealtime();
-                    Log.i("val==","startTimeR="+ startTime);
-                }
-            }
-
-            @Override
-            public void onActivityPaused(@NonNull Activity activity) {
-                if(!ACTIVITY_EVENT_PAUSED)
-                {
-                    ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
-                    ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
-
-                SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
+                                                   if (saves % 10 == 0) {
+                                                       logAppUsageTime(userId, sharedPreferences.getLong("usage", 0), appId, getSHA1Fingerprint(activity.getApplicationContext()));
+                                                   }
 
 
-                    // App goes to background
-                    long endTime = SystemClock.elapsedRealtime();
+                                               }
 
-                    long usageTime = endTime - startTime; // Time in milliseconds
-                    long savedUsage = sharedPreferences.getLong("usage",0);
-                    Log.i("val==","endTime="+endTime);
-                    Log.i("val==","startTime="+ startTime);
-                    Log.i("val==","usageTime="+usageTime);
-                    Log.i("val==","savedUsage="+savedUsage);
+                                               @Override
+                                               public void onActivityResumed(@NonNull Activity activity) {
+                                                   if (!ACTIVITY_EVENT_RESUMED) {
+                                                       ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
+                                                       ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
+                                                       startTime = SystemClock.elapsedRealtime();
+                                                       Log.i("val==", "startTimeR=" + startTime);
+                                                   }
+                                               }
 
-                    int saves = sharedPreferences.getInt("saves",1);
-                    saves = saves + 1;
-                    editor.putLong("usage",savedUsage + usageTime);
-                    Log.i("val==","usage="+sharedPreferences.getLong("usage",-1));
-                    editor.putInt("saves",saves);
+                                               @Override
+                                               public void onActivityPaused(@NonNull Activity activity) {
+                                                   if (!ACTIVITY_EVENT_PAUSED) {
+                                                       ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
+                                                       ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
+
+                                                       SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
+                                                       SharedPreferences.Editor editor = sharedPreferences.edit();
 
 
-                    editor.apply();
+                                                       // App goes to background
+                                                       long endTime = SystemClock.elapsedRealtime();
 
-            }
-            }
+                                                       long usageTime = endTime - startTime; // Time in milliseconds
+                                                       long savedUsage = sharedPreferences.getLong("usage", 0);
+                                                       Log.i("val==", "endTime=" + endTime);
+                                                       Log.i("val==", "startTime=" + startTime);
+                                                       Log.i("val==", "usageTime=" + usageTime);
+                                                       Log.i("val==", "savedUsage=" + savedUsage);
 
-            @Override
-            public void onActivityStopped(@NonNull Activity activity) {
+                                                       int saves = sharedPreferences.getInt("saves", 1);
+                                                       saves = saves + 1;
+                                                       editor.putLong("usage", savedUsage + usageTime);
+                                                       Log.i("val==", "usage=" + sharedPreferences.getLong("usage", -1));
+                                                       editor.putInt("saves", saves);
 
-            }
 
-            @Override
-            public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {}
+                                                       editor.apply();
 
-            @Override
-            public void onActivityDestroyed(@NonNull Activity activity) {}
+                                                   }
+                                               }
+
+                                               @Override
+                                               public void onActivityStopped(@NonNull Activity activity) {
+
+                                               }
+
+                                               @Override
+                                               public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
+                                               }
+
+                                               @Override
+                                               public void onActivityDestroyed(@NonNull Activity activity) {
+                                               }
+                                           }
+        );
+    }
         //});
     //}
 
