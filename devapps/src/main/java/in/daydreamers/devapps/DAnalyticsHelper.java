@@ -9,6 +9,8 @@ import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
@@ -17,9 +19,11 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
+import com.google.api.client.json.Json;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.functions.FirebaseFunctions;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -37,8 +41,10 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class DAnalyticsHelper extends Application  {
+    private static final String SCREEN_ANALYTICS = "SCREEN_ANALYTICS" ;
     private static volatile DAnalyticsHelper instance;
     private ExecutorService executorService;
 
@@ -46,12 +52,17 @@ public class DAnalyticsHelper extends Application  {
     private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "/logusage";
     private static  Boolean ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
 
+    private static final String PREFS_NAME = "app_prefs";
+    private static final String KEY_TASK_SCHEDULED = "task_scheduled";
+
     private static Boolean ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
     static long startTime;
     private static String userId;
     private static String appId;
     private static Application application;
+
+    private static int retry = 0;
 
     static {
         System.loadLibrary("native-lib");
@@ -100,11 +111,11 @@ public class DAnalyticsHelper extends Application  {
         HttpResponse response = request.execute();
 
         // Handle the response
-        if (response.isSuccessStatusCode()) {
-            String responseBody = response.parseAsString();
-            System.out.println("Response: " + responseBody);
-        } else {
-            System.err.println();
+        if (!response.isSuccessStatusCode()) {
+            retry +=1;
+            if(retry < 3) {
+                callCloudFunction(data, url);
+            }
         }
     }
 
@@ -146,33 +157,79 @@ public class DAnalyticsHelper extends Application  {
             return hexString.toString();
         } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
             e.printStackTrace();
-            return null;
+            return "";
         }
+    }
+    private void schedulePeriodicTask() {
+        // Define the work request
+        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(UpdateWorker.class, 15, TimeUnit.MINUTES)
+                .build();
+
+        WorkManager.getInstance(this).enqueue(periodicWorkRequest);
+    }
+
+    private boolean isPeriodicTaskScheduled() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        return prefs.getBoolean(KEY_TASK_SCHEDULED, false);
+    }
+
+    // Method to mark that the task has been scheduled
+    private void markPeriodicTaskScheduled() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(KEY_TASK_SCHEDULED, true); // Set the flag
+        editor.apply();
     }
 
 
-    // Method to log an event with API key validation
-    public void logScreenView(@NonNull String screenName) {
+    /**
+     *
+     * @param screenName - Name of the screen or activity
+     * @param elapsed - Time spent on each screen or activity of an app
+     */
+    public void logScreenView(@NonNull String screenName,int elapsed) {
         if (appId.isEmpty()) {
             Log.e("DevApps","App ID is required to log events.");
             return;
         }
-        executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
-        Map<String, Object> data = new HashMap<>();
+        if(!isPeriodicTaskScheduled())
+        {
+            schedulePeriodicTask();
+            markPeriodicTaskScheduled();
+        }
+
+
+        //executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
+        SharedPreferences prefs = getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        Gson gson = new Gson();
+        HashMap<String,Object> data = new HashMap<String,Object>();
+        if(prefs.contains(screenName))
+        {
+            data = gson.fromJson(prefs.getString(screenName, ""),HashMap.class);
+            elapsed += (int) data.get("elapsed") ;
+        }
+
         data.put("screenname", screenName);
+        data.put("elapsed", elapsed);
         data.put("userid", userId);
         data.put("appid", appId);
         data.put("identity", getSHA1Fingerprint(application.getApplicationContext()));
 
 
 
-            executorService.execute(()-> {
-                try {
-                callCloudFunction(data,getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+        editor.putString(screenName, gson.toJson( data));
+        // Set the flag
+        editor.apply();
+
+
+//            executorService.execute(()-> {
+//                try {
+//                callCloudFunction(data,getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            });
 
 
 
@@ -189,7 +246,7 @@ public class DAnalyticsHelper extends Application  {
                                                @Override
                                                public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
 
-                                                   Log.i("val==", "startTimeC=" + startTime);
+
                                                }
 
                                                @Override
@@ -200,7 +257,8 @@ public class DAnalyticsHelper extends Application  {
                                                    SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                                                    int saves = sharedPreferences.getInt("saves", 1);*/
 
-                                                Log.i("startedd","activity started");
+
+
 
 
                                                }
@@ -237,7 +295,7 @@ public class DAnalyticsHelper extends Application  {
 
                                                        int saves = sharedPreferences.getInt("saves", 1);
                                                        saves = saves + 1;
-                                                       editor.putLong("usage", 0);//savedUsage + usageTime
+                                                       editor.putLong("usage", savedUsage + usageTime);//
                                                        Log.i("val==", "usage=" + sharedPreferences.getLong("usage", -1));
                                                        editor.putInt("saves", saves);
                                                        editor.apply();

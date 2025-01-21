@@ -80,6 +80,7 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
    implementation(libs.google.http.client.android)
-   implementation(libs.google.http.client.gson) // Optional for JSON parsing
+   implementation(libs.google.http.client.gson)
+    implementation(libs.work.runtime)// Optional for JSON parsing
 
 }
