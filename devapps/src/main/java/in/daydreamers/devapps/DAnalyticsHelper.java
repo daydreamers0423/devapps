@@ -29,6 +29,8 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
@@ -178,7 +180,7 @@ public class DAnalyticsHelper extends Application  {
 
 
     // Method to monitor app usage with API key validation
-   public void monitorAppUsage(Application application ) {
+   public void monitorAppUsage(@NotNull Application application ) {
 
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
 
