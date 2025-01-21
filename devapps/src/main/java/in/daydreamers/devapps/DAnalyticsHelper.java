@@ -170,11 +170,10 @@ public class DAnalyticsHelper extends Application {
 
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
 
-            private long startTime;
-
+            private long startTime = SystemClock.elapsedRealtime();
             @Override
             public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
-                startTime = SystemClock.elapsedRealtime();
+
                 Log.i("val==","startTimeC="+startTime);
             }
 
