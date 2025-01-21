@@ -167,21 +167,21 @@ public class DAnalyticsHelper extends Application {
 
     // Method to monitor app usage with API key validation
     public void monitorAppUsage(Application application,@NonNull String userId,@NonNull String appId ) {
-
+        final long[] startTime = {SystemClock.elapsedRealtime()};
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
 
-            private long startTime = SystemClock.elapsedRealtime();
+
             @Override
             public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
 
-                Log.i("val==","startTimeC="+startTime);
+                Log.i("val==","startTimeC="+ startTime[0]);
             }
 
             @Override
             public void onActivityStarted(@NonNull Activity activity) {
 
-                startTime = SystemClock.elapsedRealtime();
-                Log.i("val==","startTime="+startTime);
+                startTime[0] = SystemClock.elapsedRealtime();
+                Log.i("val==","startTime="+ startTime[0]);
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 int saves = sharedPreferences.getInt("saves",1);
 
@@ -199,8 +199,8 @@ public class DAnalyticsHelper extends Application {
                 if(!ACTIVITY_EVENT_RESUMED) {
                     ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                     ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
-                    startTime = SystemClock.elapsedRealtime();
-                    Log.i("val==","startTimeR="+startTime);
+                    startTime[0] = SystemClock.elapsedRealtime();
+                    Log.i("val==","startTimeR="+ startTime[0]);
                 }
             }
 
@@ -218,10 +218,10 @@ public class DAnalyticsHelper extends Application {
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
 
-                    long usageTime = endTime - startTime; // Time in milliseconds
+                    long usageTime = endTime - startTime[0]; // Time in milliseconds
                     long savedUsage = sharedPreferences.getLong("usage",0);
                     Log.i("val==","endTime="+endTime);
-                    Log.i("val==","startTime="+startTime);
+                    Log.i("val==","startTime="+ startTime[0]);
                     Log.i("val==","usageTime="+usageTime);
                     Log.i("val==","savedUsage="+savedUsage);
 
