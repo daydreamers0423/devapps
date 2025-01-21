@@ -237,7 +237,7 @@ public class DAnalyticsHelper extends Application  {
 
                                                        int saves = sharedPreferences.getInt("saves", 1);
                                                        saves = saves + 1;
-                                                       editor.putLong("usage", savedUsage + usageTime);
+                                                       editor.putLong("usage", 0);//savedUsage + usageTime
                                                        Log.i("val==", "usage=" + sharedPreferences.getLong("usage", -1));
                                                        editor.putInt("saves", saves);
                                                        editor.apply();
