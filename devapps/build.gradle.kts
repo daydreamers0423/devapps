@@ -81,6 +81,6 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
    implementation(libs.google.http.client.android)
    implementation(libs.google.http.client.gson)
-    implementation(libs.work.runtime)// Optional for JSON parsing
+    implementation("androidx.work:work-runtime:2.10.0")// Optional for JSON parsing
 
 }
