@@ -178,16 +178,11 @@ public class DAnalyticsHelper extends Application  {
 
 
     // Method to monitor app usage with API key validation
-   /* public void monitorAppUsage(Application application,@NonNull String userId,@NonNull String appId ) {
-        final long[] startTime = {SystemClock.elapsedRealtime()};
+   public void monitorAppUsage(Application application,@NonNull String userId,@NonNull String appId ) {
+
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-*/
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        Log.e("onCreate=",application.toString());
-        // Register for Activity lifecycle events
-        application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+
+
 
                                                @Override
                                                public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
@@ -198,14 +193,12 @@ public class DAnalyticsHelper extends Application  {
                                                @Override
                                                public void onActivityStarted(@NonNull Activity activity) {
 
-                                                   startTime = SystemClock.elapsedRealtime();
+                                                  /* startTime = SystemClock.elapsedRealtime();
                                                    Log.i("val==", "startTime=" + startTime);
                                                    SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
-                                                   int saves = sharedPreferences.getInt("saves", 1);
+                                                   int saves = sharedPreferences.getInt("saves", 1);*/
 
-                                                   if (saves % 10 == 0) {
-                                                       logAppUsageTime(userId, sharedPreferences.getLong("usage", 0), appId, getSHA1Fingerprint(activity.getApplicationContext()));
-                                                   }
+                                                Log.i("startedd","activity started");
 
 
                                                }
@@ -245,9 +238,11 @@ public class DAnalyticsHelper extends Application  {
                                                        editor.putLong("usage", savedUsage + usageTime);
                                                        Log.i("val==", "usage=" + sharedPreferences.getLong("usage", -1));
                                                        editor.putInt("saves", saves);
-
-
                                                        editor.apply();
+                                                       if (saves % 10 == 0) {
+                                                           logAppUsageTime(userId, sharedPreferences.getLong("usage", 0), appId, getSHA1Fingerprint(activity.getApplicationContext()));
+                                                       }
+
 
                                                    }
                                                }
@@ -264,11 +259,9 @@ public class DAnalyticsHelper extends Application  {
                                                @Override
                                                public void onActivityDestroyed(@NonNull Activity activity) {
                                                }
-                                           }
-        );
+
+        });
     }
-        //});
-    //}
 
     private void logAppUsageTime(@NonNull String userId,@NonNull long usageTime,@NonNull String appId,String... identity) {
         if ( appId.isEmpty()) {
