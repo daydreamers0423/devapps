@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
@@ -35,7 +36,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class DAnalyticsHelper extends Application {
+public class DAnalyticsHelper extends Application implements Application.ActivityLifecycleCallbacks {
     private static volatile DAnalyticsHelper instance;
     private ExecutorService executorService;
 
@@ -44,6 +45,10 @@ public class DAnalyticsHelper extends Application {
     private static  Boolean ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
 
     private static Boolean ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
+
+    static long startTime;
+    private static String userId;
+    private static String appId;
 
     static {
         System.loadLibrary("native-lib");
@@ -58,7 +63,7 @@ public class DAnalyticsHelper extends Application {
     }
 
     // Thread-safe method to get the singleton instance
-    public static DAnalyticsHelper getInstance() {
+    public static DAnalyticsHelper getInstance(String userId,String appId) {
         if (instance == null) {
             synchronized (DAnalyticsHelper.class) {
                 if (instance == null) {
@@ -66,6 +71,10 @@ public class DAnalyticsHelper extends Application {
                 }
             }
         }
+        startTime = SystemClock.elapsedRealtime();
+        DAnalyticsHelper.userId = userId;
+        DAnalyticsHelper.appId = appId;
+
         return instance;
     }
 
@@ -139,7 +148,7 @@ public class DAnalyticsHelper extends Application {
 
 
     // Method to log an event with API key validation
-    public void logScreenView(Application application,@NonNull String screenName, @NonNull String userId,@NonNull String appId) {
+    public void logScreenView(Application application,@NonNull String screenName) {
         if (appId.isEmpty()) {
             Log.e("DevApps","App ID is required to log events.");
             return;
@@ -165,23 +174,24 @@ public class DAnalyticsHelper extends Application {
 
     }
 
+
     // Method to monitor app usage with API key validation
-    public void monitorAppUsage(Application application,@NonNull String userId,@NonNull String appId ) {
+   /* public void monitorAppUsage(Application application,@NonNull String userId,@NonNull String appId ) {
         final long[] startTime = {SystemClock.elapsedRealtime()};
         application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-
+*/
 
             @Override
             public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
 
-                Log.i("val==","startTimeC="+ startTime[0]);
+                Log.i("val==","startTimeC="+ startTime);
             }
 
             @Override
             public void onActivityStarted(@NonNull Activity activity) {
 
-                startTime[0] = SystemClock.elapsedRealtime();
-                Log.i("val==","startTime="+ startTime[0]);
+                startTime = SystemClock.elapsedRealtime();
+                Log.i("val==","startTime="+ startTime);
                 SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
                 int saves = sharedPreferences.getInt("saves",1);
 
@@ -199,8 +209,8 @@ public class DAnalyticsHelper extends Application {
                 if(!ACTIVITY_EVENT_RESUMED) {
                     ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                     ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
-                    startTime[0] = SystemClock.elapsedRealtime();
-                    Log.i("val==","startTimeR="+ startTime[0]);
+                    startTime = SystemClock.elapsedRealtime();
+                    Log.i("val==","startTimeR="+ startTime);
                 }
             }
 
@@ -218,10 +228,10 @@ public class DAnalyticsHelper extends Application {
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
 
-                    long usageTime = endTime - startTime[0]; // Time in milliseconds
+                    long usageTime = endTime - startTime; // Time in milliseconds
                     long savedUsage = sharedPreferences.getLong("usage",0);
                     Log.i("val==","endTime="+endTime);
-                    Log.i("val==","startTime="+ startTime[0]);
+                    Log.i("val==","startTime="+ startTime);
                     Log.i("val==","usageTime="+usageTime);
                     Log.i("val==","savedUsage="+savedUsage);
 
@@ -247,8 +257,8 @@ public class DAnalyticsHelper extends Application {
 
             @Override
             public void onActivityDestroyed(@NonNull Activity activity) {}
-        });
-    }
+        //});
+    //}
 
     private void logAppUsageTime(@NonNull String userId,@NonNull long usageTime,@NonNull String appId,String... identity) {
         if ( appId.isEmpty()) {
@@ -270,5 +280,6 @@ public class DAnalyticsHelper extends Application {
             }
         });
     }
+
 
 }
