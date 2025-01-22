@@ -19,11 +19,12 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class UpdateWorker  extends Worker {
 
-    private static final String SCREEN_ANALYTICS = "SCREEN_ANALYTICS";
+    private static final String SCREEN_ANALYTICS = "SCREEN_ANALYTICS_DEVAPPS";
     private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "/loganalytics";
 
     public native String getServiceUrl();
@@ -39,8 +40,9 @@ public class UpdateWorker  extends Worker {
     @Override
     public Result doWork() {
         SharedPreferences prefs = context.getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
         try {
-            callCloudFunction(prefs.getAll(),getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
+            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class),getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
         } catch (IOException e) {
             return Result.failure();
         }
