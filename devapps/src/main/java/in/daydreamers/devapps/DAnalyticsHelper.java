@@ -207,7 +207,8 @@ public class DAnalyticsHelper extends Application  {
         if(prefs.contains(screenName))
         {
             data = gson.fromJson(prefs.getString(screenName, ""),HashMap.class);
-            elapsed += (int) data.get("elapsed") ;
+            Log.i("elapsed--",Objects.requireNonNullElse(data.get("elapsed"),0).toString());
+            elapsed += Integer.parseInt(Objects.requireNonNullElse(data.get("elapsed"),0).toString()) ;
         }
 
         data.put("screenname", screenName);
