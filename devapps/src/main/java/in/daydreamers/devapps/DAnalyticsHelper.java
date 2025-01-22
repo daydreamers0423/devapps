@@ -169,13 +169,13 @@ public class DAnalyticsHelper extends Application  {
     }
 
     private boolean isPeriodicTaskScheduled() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return prefs.getBoolean(KEY_TASK_SCHEDULED, false);
     }
 
     // Method to mark that the task has been scheduled
     private void markPeriodicTaskScheduled() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean(KEY_TASK_SCHEDULED, true); // Set the flag
         editor.apply();
@@ -200,7 +200,7 @@ public class DAnalyticsHelper extends Application  {
 
 
         //executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
-        SharedPreferences prefs = getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
+        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
         HashMap<String,Object> data = new HashMap<String,Object>();
