@@ -44,7 +44,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class DAnalyticsHelper extends Application  {
-    private static final String SCREEN_ANALYTICS = "SCREEN_ANALYTICS" ;
+    private static final String SCREEN_ANALYTICS = "SCREEN_ANALYTICS_DEVAPPS" ;
     private static volatile DAnalyticsHelper instance;
     private ExecutorService executorService;
 
