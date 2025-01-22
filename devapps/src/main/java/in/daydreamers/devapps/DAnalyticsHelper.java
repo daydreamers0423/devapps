@@ -203,23 +203,28 @@ public class DAnalyticsHelper extends Application  {
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
-        HashMap<String,Object> data = new HashMap<String,Object>();
-        if(prefs.contains(screenName))
+        HashMap<String,Object> data = Objects.requireNonNullElse(gson.fromJson(prefs.getString("timeline",""),HashMap.class),new HashMap<String,Object>());
+
+        HashMap<String,Object> screentime = (HashMap<String, Object>) Objects.requireNonNullElse(data.get("analytics"),new HashMap<String,Object>());
+        if(!screentime.isEmpty())
         {
-            data = gson.fromJson(prefs.getString(screenName, ""),HashMap.class);
-            Log.i("elapsed--",Objects.requireNonNullElse(data.get("elapsed"),0).toString());
-            elapsed += Integer.parseInt(Objects.requireNonNullElse(data.get("elapsed"),0).toString()) ;
+            elapsed = Objects.requireNonNullElse(Integer.parseInt(Objects.requireNonNullElse(screentime.get(screenName),0.0).toString().split("\\.")[0]) + elapsed,elapsed);
+            screentime.put(screenName,elapsed);
+            Log.i("elapsed--",""+elapsed);
+            data.put("analytics", screentime);
+        }
+        else {
+
+            screentime.put(screenName, elapsed);
+            data.put("analytics", screentime);
+            data.put("userid", userId);
+            data.put("appid", appId);
+            data.put("identity", getSHA1Fingerprint(application.getApplicationContext()));
         }
 
-        data.put("screenname", screenName);
-        data.put("elapsed", elapsed);
-        data.put("userid", userId);
-        data.put("appid", appId);
-        data.put("identity", getSHA1Fingerprint(application.getApplicationContext()));
 
 
-
-        editor.putString(screenName, gson.toJson( data));
+        editor.putString("timeline", gson.toJson( data));
         // Set the flag
         editor.apply();
 
