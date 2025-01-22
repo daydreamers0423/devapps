@@ -32,6 +32,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
+import android.util.Pair;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -61,6 +62,8 @@ public class DAnalyticsHelper extends Application  {
     private static String userId;
     private static String appId;
     private static Application application;
+
+    static Pair<String,Long> screenStartTime;
 
     private static int retry = 0;
 
@@ -181,16 +184,27 @@ public class DAnalyticsHelper extends Application  {
         editor.apply();
     }
 
+    public void logScreenViewStart(@NonNull String screenName) {
+        if (appId.isEmpty()) {
+            Log.e("DevApps", "App ID is required to log events.");
+            return;
+        }
+
+        screenStartTime = new Pair<>(screenName,SystemClock.elapsedRealtime());
+    }
 
     /**
      *
      * @param screenName - Name of the screen or activity
-     * @param elapsed - Time spent on each screen or activity of an app
      */
-    public void logScreenView(@NonNull String screenName,int elapsed) {
+    public void logScreenView(@NonNull String screenName) {
         if (appId.isEmpty()) {
             Log.e("DevApps","App ID is required to log events.");
             return;
+        }
+        long elapsed = 0L;
+        if(screenName.equals(screenStartTime.first)) {
+            elapsed = SystemClock.elapsedRealtime() - screenStartTime.second;
         }
         if(!isPeriodicTaskScheduled())
         {
@@ -208,7 +222,7 @@ public class DAnalyticsHelper extends Application  {
         HashMap<String,Object> screentime = (HashMap<String, Object>) Objects.requireNonNullElse(data.get("analytics"),new HashMap<String,Object>());
         if(!screentime.isEmpty())
         {
-            elapsed = Objects.requireNonNullElse(Integer.parseInt(Objects.requireNonNullElse(screentime.get(screenName),0.0).toString().split("\\.")[0]) + elapsed,elapsed);
+            elapsed = Objects.requireNonNullElse(Long.parseLong(Objects.requireNonNullElse(screentime.get(screenName),0.0).toString().split("\\.")[0]) + elapsed,elapsed);
             screentime.put(screenName,elapsed);
             Log.i("elapsed--",""+elapsed);
             data.put("analytics", screentime);
