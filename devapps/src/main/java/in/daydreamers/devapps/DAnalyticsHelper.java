@@ -219,7 +219,7 @@ public class DAnalyticsHelper extends Application  {
         Gson gson = new Gson();
         HashMap<String,Object> data = Objects.requireNonNullElse(gson.fromJson(prefs.getString("timeline",""),HashMap.class),new HashMap<String,Object>());
 
-        HashMap<String,Object> screentime = (HashMap<String, Object>) Objects.requireNonNullElse(gson.fromJson(Objects.requireNonNullElse((String)data.get("analytics"),""),HashMap.class),new HashMap<String,Object>());
+        Map<String,Object> screentime = (Map<String, Object>) Objects.requireNonNullElse(data.get("analytics"),new HashMap<String,Object>());
         if(!screentime.isEmpty())
         {
             elapsed = Objects.requireNonNullElse(Long.parseLong(Objects.requireNonNullElse(screentime.get(screenName),0.0).toString().split("\\.")[0]) + elapsed,elapsed);
