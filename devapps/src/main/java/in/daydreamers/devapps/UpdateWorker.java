@@ -21,6 +21,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class UpdateWorker  extends Worker {
 
@@ -42,17 +43,17 @@ public class UpdateWorker  extends Worker {
         SharedPreferences prefs = context.getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         try {
-            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class),getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
+            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getString("usage", "0")), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
         } catch (IOException e) {
             return Result.failure();
         }
         return Result.success();
     }
 
-    public static void callCloudFunction(@NonNull Map data, @NonNull String url) throws IOException {
+    public static void callCloudFunction(@NonNull Map data,@NonNull  String usage ,@NonNull String url) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
-
+        data.put("usage",Long.valueOf(usage));
         // Create a request factory
         HttpRequestFactory requestFactory = transport.createRequestFactory();
 

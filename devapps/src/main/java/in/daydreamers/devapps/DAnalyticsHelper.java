@@ -47,10 +47,10 @@ import java.util.concurrent.TimeUnit;
 public class DAnalyticsHelper extends Application  {
     private static final String SCREEN_ANALYTICS = "SCREEN_ANALYTICS_DEVAPPS" ;
     private static volatile DAnalyticsHelper instance;
-    private ExecutorService executorService;
+    //private ExecutorService executorService;
 
     private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "/loganalytics";
-    private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "/logusage";
+    //private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "/logusage";
     private static  Boolean ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
 
     private static final String PREFS_NAME = "app_prefs";
@@ -92,7 +92,7 @@ public class DAnalyticsHelper extends Application  {
         DAnalyticsHelper.userId = userId;
         DAnalyticsHelper.appId = appId;
         DAnalyticsHelper.application = application;
-
+        instance.monitorAppUsage(DAnalyticsHelper.application);
         return instance;
     }
 
@@ -299,7 +299,7 @@ public class DAnalyticsHelper extends Application  {
                                                        ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
                                                        ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
-                                                       SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
+                                                       SharedPreferences sharedPreferences = activity.getSharedPreferences(SCREEN_ANALYTICS, MODE_PRIVATE);
                                                        SharedPreferences.Editor editor = sharedPreferences.edit();
 
 
@@ -308,20 +308,15 @@ public class DAnalyticsHelper extends Application  {
 
                                                        long usageTime = endTime - startTime; // Time in milliseconds
                                                        long savedUsage = sharedPreferences.getLong("usage", 0);
-                                                       Log.i("val==", "endTime=" + endTime);
-                                                       Log.i("val==", "startTime=" + startTime);
-                                                       Log.i("val==", "usageTime=" + usageTime);
-                                                       Log.i("val==", "savedUsage=" + savedUsage);
-
-                                                       int saves = sharedPreferences.getInt("saves", 1);
-                                                       saves = saves + 1;
+//                                                       int saves = sharedPreferences.getInt("saves", 1);
+//                                                       saves = saves + 1;
                                                        editor.putLong("usage", savedUsage + usageTime);//
                                                        Log.i("val==", "usage=" + sharedPreferences.getLong("usage", -1));
-                                                       editor.putInt("saves", saves);
+                                                       //editor.putInt("saves", saves);
                                                        editor.apply();
-                                                       if (saves % 10 == 0) {
-                                                           logAppUsageTime(userId, sharedPreferences.getLong("usage", 0), appId, getSHA1Fingerprint(activity.getApplicationContext()));
-                                                       }
+//                                                       if (saves % 10 == 0) {
+//                                                           logAppUsageTime(userId, sharedPreferences.getLong("usage", 0), appId, getSHA1Fingerprint(activity.getApplicationContext()));
+//                                                       }
 
 
                                                    }
@@ -348,20 +343,20 @@ public class DAnalyticsHelper extends Application  {
             Log.e("devapps","App Id is required to log events.");
             return;
         }
-        executorService = executorService == null ? Executors.newSingleThreadExecutor():executorService;
+        //executorService = executorService == null ? Executors.newSingleThreadExecutor():executorService;
         Map<String, Object> data = new HashMap<>();
         data.put("userid", userId);
         data.put("usagetime", usageTime);
         data.put("appid", appId);
         data.put("identity", identity != null ? identity[0] : getSHA1Fingerprint(this));
-        executorService.execute(()-> {
-            try {
-
-                callCloudFunction(data,getServiceUrl() + CLOUD_FUNCTION_URL_LOG_USGAE);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+//        executorService.execute(()-> {
+//            try {
+//
+//                callCloudFunction(data,getServiceUrl() + CLOUD_FUNCTION_URL_LOG_USGAE);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        });
     }
 
 
