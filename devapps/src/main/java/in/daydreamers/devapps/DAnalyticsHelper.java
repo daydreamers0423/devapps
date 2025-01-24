@@ -204,7 +204,7 @@ public class DAnalyticsHelper extends Application  {
         }
         long elapsed = 0L;
         if(screenName.equals(screenStartTime.first)) {
-            elapsed = (SystemClock.elapsedRealtime() - screenStartTime.second) / 60000;
+            elapsed = (SystemClock.elapsedRealtime() - screenStartTime.second) / 1000;
         }
         if(!isPeriodicTaskScheduled())
         {
