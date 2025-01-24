@@ -47,10 +47,7 @@ import java.util.concurrent.TimeUnit;
 public class DAnalyticsHelper extends Application  {
     private static final String SCREEN_ANALYTICS = "SCREEN_ANALYTICS_DEVAPPS" ;
     private static volatile DAnalyticsHelper instance;
-    //private ExecutorService executorService;
 
-    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "/loganalytics";
-    //private static final String CLOUD_FUNCTION_URL_LOG_USGAE = "/logusage";
     private static  Boolean ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
 
     private static final String PREFS_NAME = "app_prefs";
@@ -123,8 +120,6 @@ public class DAnalyticsHelper extends Application  {
     }
 
     // Helper class to create JSON payload
-
-
     public static String getSHA1Fingerprint(Context context) {
         try {
             // Get the package manager and package info
@@ -165,7 +160,7 @@ public class DAnalyticsHelper extends Application  {
     }
     private void schedulePeriodicTask() {
         // Define the work request
-        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(UpdateWorker.class, 15, TimeUnit.MINUTES)
+        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(UpdateWorker.class, 5, TimeUnit.MINUTES)
                 .build();
 
         WorkManager.getInstance(this).enqueue(periodicWorkRequest);
@@ -212,8 +207,6 @@ public class DAnalyticsHelper extends Application  {
             markPeriodicTaskScheduled();
         }
 
-
-        //executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
@@ -243,15 +236,6 @@ public class DAnalyticsHelper extends Application  {
         editor.apply();
 
 
-//            executorService.execute(()-> {
-//                try {
-//                callCloudFunction(data,getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
-//                } catch (IOException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            });
-
-
 
     }
 
@@ -271,16 +255,6 @@ public class DAnalyticsHelper extends Application  {
 
                                                @Override
                                                public void onActivityStarted(@NonNull Activity activity) {
-
-                                                  /* startTime = SystemClock.elapsedRealtime();
-                                                   Log.i("val==", "startTime=" + startTime);
-                                                   SharedPreferences sharedPreferences = activity.getSharedPreferences("devapps", MODE_PRIVATE);
-                                                   int saves = sharedPreferences.getInt("saves", 1);*/
-
-
-
-
-
                                                }
 
                                                @Override
@@ -289,7 +263,6 @@ public class DAnalyticsHelper extends Application  {
                                                        ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                                                        ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
                                                        startTime = SystemClock.elapsedRealtime();
-                                                       Log.i("val==", "startTimeR=" + startTime);
                                                    }
                                                }
 
@@ -301,23 +274,13 @@ public class DAnalyticsHelper extends Application  {
 
                                                        SharedPreferences sharedPreferences = activity.getSharedPreferences(SCREEN_ANALYTICS, MODE_PRIVATE);
                                                        SharedPreferences.Editor editor = sharedPreferences.edit();
-
-
                                                        // App goes to background
                                                        long endTime = SystemClock.elapsedRealtime();
-
                                                        long usageTime = endTime - startTime; // Time in milliseconds
                                                        long savedUsage = sharedPreferences.getLong("usage", 0);
-//                                                       int saves = sharedPreferences.getInt("saves", 1);
-//                                                       saves = saves + 1;
                                                        editor.putLong("usage", savedUsage + usageTime);//
-                                                       Log.i("val==", "usage=" + sharedPreferences.getLong("usage", -1));
-                                                       //editor.putInt("saves", saves);
-                                                       editor.apply();
-//                                                       if (saves % 10 == 0) {
-//                                                           logAppUsageTime(userId, sharedPreferences.getLong("usage", 0), appId, getSHA1Fingerprint(activity.getApplicationContext()));
-//                                                       }
 
+                                                       editor.apply();
 
                                                    }
                                                }
