@@ -9,6 +9,9 @@ import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.work.BackoffPolicy;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
@@ -159,9 +162,16 @@ public class DAnalyticsHelper extends Application  {
         }
     }
     private void schedulePeriodicTask() {
+
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)  // Ensure network connectivity
+                .setRequiresBatteryNotLow(false)
+                .setTriggerContentMaxDelay(2,TimeUnit.MINUTES)
+
+                .build();
         // Define the work request
         PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(UpdateWorker.class, 15, TimeUnit.MINUTES)
-                .build();
+                .setConstraints(constraints).setBackoffCriteria(BackoffPolicy.EXPONENTIAL,2,TimeUnit.HOURS).build();
 
         WorkManager.getInstance(this).enqueue(periodicWorkRequest);
     }

@@ -45,7 +45,9 @@ public class UpdateWorker  extends Worker {
         try {
             callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
         } catch (IOException e) {
-            return Result.failure();
+                return Result.failure();
+        } catch (Exception e) {
+            return Result.retry();
         }
         return Result.success();
     }
