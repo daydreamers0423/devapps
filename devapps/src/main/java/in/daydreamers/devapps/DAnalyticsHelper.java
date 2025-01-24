@@ -160,7 +160,7 @@ public class DAnalyticsHelper extends Application  {
     }
     private void schedulePeriodicTask() {
         // Define the work request
-        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(UpdateWorker.class, 5, TimeUnit.MINUTES)
+        PeriodicWorkRequest periodicWorkRequest = new PeriodicWorkRequest.Builder(UpdateWorker.class, 15, TimeUnit.MINUTES)
                 .build();
 
         WorkManager.getInstance(this).enqueue(periodicWorkRequest);
