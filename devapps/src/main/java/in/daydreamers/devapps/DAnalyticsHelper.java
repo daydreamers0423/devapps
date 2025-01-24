@@ -216,8 +216,6 @@ public class DAnalyticsHelper extends Application  {
         //executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.clear();
-        editor.apply();
         Gson gson = new Gson();
         HashMap<String,Object> data = Objects.requireNonNullElse(gson.fromJson(prefs.getString("timeline",""),HashMap.class),new HashMap<String,Object>());
 
