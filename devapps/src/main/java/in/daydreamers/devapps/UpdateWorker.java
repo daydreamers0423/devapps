@@ -55,7 +55,7 @@ public class UpdateWorker  extends Worker {
     public static void callCloudFunction(@NonNull Map data,@NonNull  Long usage ,@NonNull String url) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
-        data.put("usage",usage);
+        data.put("usage",usage/1000);
         // Create a request factory
         HttpRequestFactory requestFactory = transport.createRequestFactory();
 
