@@ -216,6 +216,7 @@ public class DAnalyticsHelper extends Application  {
             screenStartTime = Pair.create(null,null);
         }
         else {
+            elapsed = (SystemClock.elapsedRealtime() - screenStartTime.second) / 1000;
             screenStartTime = Pair.create(screenStartTime.first, null);
         }
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
