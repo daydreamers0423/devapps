@@ -2,8 +2,10 @@ package in.daydreamers.devapps;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.Signature;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 
@@ -78,6 +80,7 @@ public class DAnalyticsHelper extends Application  {
 
 
     }
+
 
     // Thread-safe method to get the singleton instance
     public static DAnalyticsHelper getInstance(@NonNull String userId,@NonNull String appId,@NonNull Application application) {
@@ -259,7 +262,16 @@ public class DAnalyticsHelper extends Application  {
 
                                                @Override
                                                public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
+                                                   Intent intent = activity.getIntent();
+                                                   Uri uri = intent.getData();
 
+                                                   if (uri != null) {
+
+                                                       String itemId = uri.getQueryParameter("id");
+                                                       assert itemId != null;
+                                                       Log.i("ID==",itemId);
+
+                                                   }
 
                                                }
 
