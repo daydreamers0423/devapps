@@ -60,6 +60,8 @@ public class DAnalyticsHelper extends Application  {
 
     private static Boolean ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
+    private boolean isDeepLinkHandled = Boolean.FALSE;;
+
     static long startTime;
     private static String userId;
     private static String appId;
@@ -262,15 +264,18 @@ public class DAnalyticsHelper extends Application  {
 
                                                @Override
                                                public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
-                                                   Intent intent = activity.getIntent();
-                                                   Uri uri = intent.getData();
+                                                   if(!isDeepLinkHandled) {
+                                                       Intent intent = activity.getIntent();
+                                                       Uri uri = intent.getData();
 
-                                                   if (uri != null) {
+                                                       if (uri != null) {
 
-                                                       String itemId = uri.getQueryParameter("id");
-                                                       assert itemId != null;
-                                                       Log.i("ID==",itemId);
+                                                           String itemId = uri.getQueryParameter("id");
+                                                           assert itemId != null;
+                                                           Log.i("ID==", itemId);
+                                                           isDeepLinkHandled = Boolean.TRUE;
 
+                                                       }
                                                    }
 
                                                }
