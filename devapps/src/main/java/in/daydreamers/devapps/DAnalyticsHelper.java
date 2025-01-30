@@ -256,7 +256,7 @@ public class DAnalyticsHelper extends Application  {
 
         super.onCreate();
         application = this;
-        Log.i("application=",application.toString());
+        Log.i("application=", String.valueOf(application));
         registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
