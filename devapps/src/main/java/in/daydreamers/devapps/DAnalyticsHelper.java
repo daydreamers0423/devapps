@@ -80,7 +80,7 @@ public class DAnalyticsHelper extends Application  {
     // Private constructor to prevent direct instantiation
     private DAnalyticsHelper() {
 
-
+    Log.i("in constructor","----DAnalyticsHelper");
     }
 
 
@@ -97,7 +97,7 @@ public class DAnalyticsHelper extends Application  {
         DAnalyticsHelper.userId = userId;
         DAnalyticsHelper.appId = appId;
         DAnalyticsHelper.application = application;
-        instance.monitorAppUsage(DAnalyticsHelper.application);
+        //instance.monitorAppUsage(DAnalyticsHelper.application);
         return instance;
     }
 
@@ -251,6 +251,81 @@ public class DAnalyticsHelper extends Application  {
         editor.apply();
 
 
+
+    }
+    @Override
+    public void onCreate(){
+
+        super.onCreate();
+        Log.i("application=",application.toString());
+        registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+                Log.i("onActivityCreated=","onActivityCreated..."+isDeepLinkHandled);
+                if(!isDeepLinkHandled) {
+                    Intent intent = activity.getIntent();
+                    Uri uri = intent.getData();
+
+                    if (uri != null) {
+
+                        String itemId = uri.getQueryParameter("id");
+                        assert itemId != null;
+                        Log.i("ID==", itemId);
+                        isDeepLinkHandled = Boolean.TRUE;
+
+                    }
+                }
+
+            }
+
+            @Override
+            public void onActivityStarted(Activity activity) {
+                // Activity is started
+            }
+
+            @Override
+            public void onActivityResumed(Activity activity) {
+                Log.i("onActivityCreated=","onActivityResumed..."+isDeepLinkHandled);
+                if (!ACTIVITY_EVENT_RESUMED) {
+                    ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
+                    ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
+                    startTime = SystemClock.elapsedRealtime();
+                }
+                if(!isDeepLinkHandled) {
+                    Intent intent = activity.getIntent();
+                    Uri uri = intent.getData();
+
+                    if (uri != null) {
+
+                        String itemId = uri.getQueryParameter("id");
+                        assert itemId != null;
+                        Log.i("ID==", itemId);
+                        isDeepLinkHandled = Boolean.TRUE;
+
+                    }
+                }
+            }
+
+            @Override
+            public void onActivityPaused(Activity activity) {
+                // Activity is paused
+            }
+
+            @Override
+            public void onActivityStopped(Activity activity) {
+                // Activity is stopped
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+                // Activity is saving its instance state
+            }
+
+            @Override
+            public void onActivityDestroyed(Activity activity) {
+                // Activity is destroyed
+            }
+        });
 
     }
 
