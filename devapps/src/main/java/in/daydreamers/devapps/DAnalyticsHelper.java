@@ -78,12 +78,10 @@ public class DAnalyticsHelper extends Application  {
     public native String getServiceUrl();
 
     // Private constructor to prevent direct instantiation
-    private DAnalyticsHelper() {
+    public DAnalyticsHelper() {
 
     Log.i("in constructor","----DAnalyticsHelper");
     }
-
-
     // Thread-safe method to get the singleton instance
     public static DAnalyticsHelper getInstance(@NonNull String userId,@NonNull String appId,@NonNull Application application) {
         if (instance == null) {
