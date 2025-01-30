@@ -264,6 +264,7 @@ public class DAnalyticsHelper extends Application  {
 
                                                @Override
                                                public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
+                                                   Log.i("onActivityCreated=","onActivityCreated..."+isDeepLinkHandled);
                                                    if(!isDeepLinkHandled) {
                                                        Intent intent = activity.getIntent();
                                                        Uri uri = intent.getData();
@@ -282,10 +283,12 @@ public class DAnalyticsHelper extends Application  {
 
                                                @Override
                                                public void onActivityStarted(@NonNull Activity activity) {
+                                                   Log.i("onActivityCreated=","onActivityStarted..."+isDeepLinkHandled);
                                                }
 
                                                @Override
                                                public void onActivityResumed(@NonNull Activity activity) {
+                                                   Log.i("onActivityCreated=","onActivityResumed..."+isDeepLinkHandled);
                                                    if (!ACTIVITY_EVENT_RESUMED) {
                                                        ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                                                        ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
