@@ -263,7 +263,7 @@ public class DAnalyticsHelper extends Application  {
                     Intent intent = activity.getIntent();
                     Uri uri = intent.getData();
 
-                    if (uri != null && uri.toString().equals(getDeeplink())) {
+                    if (uri != null && uri.toString().startsWith(getDeeplink())) {
                         Log.i("DevApps",getDeeplink());
                         Log.i("DevApps",uri.toString());
                         String itemId = uri.getQueryParameter("id");
