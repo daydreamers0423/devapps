@@ -43,7 +43,7 @@ public class UpdateWorker  extends Worker {
         SharedPreferences prefs = context.getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         try {
-            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS);
+            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""));
         } catch (IOException e) {
                 return Result.failure();
         } catch (Exception e) {
@@ -52,10 +52,11 @@ public class UpdateWorker  extends Worker {
         return Result.success();
     }
 
-    public static void callCloudFunction(@NonNull Map data,@NonNull  Long usage ,@NonNull String url) throws IOException {
+    public static void callCloudFunction(@NonNull Map data,@NonNull  Long usage ,@NonNull String url,String refId) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
         data.put("usage",usage/1000);
+        data.put("refId",refId);
         // Create a request factory
         HttpRequestFactory requestFactory = transport.createRequestFactory();
 

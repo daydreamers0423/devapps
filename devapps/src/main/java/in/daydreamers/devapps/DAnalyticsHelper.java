@@ -75,7 +75,7 @@ public class DAnalyticsHelper extends Application  {
         System.loadLibrary("native-lib");
     }
 
-    public native String getServiceUrl();
+    public native String getDeeplink();
 
     // Private constructor to prevent direct instantiation
     public DAnalyticsHelper() {
@@ -214,11 +214,7 @@ public class DAnalyticsHelper extends Application  {
         if(screenName.equals(screenStartTime.first)) {
             elapsed = (SystemClock.elapsedRealtime() - screenStartTime.second) / 1000;
         }
-        if(!isPeriodicTaskScheduled())
-        {
-            schedulePeriodicTask();
-            markPeriodicTaskScheduled();
-        }
+
 
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -230,7 +226,8 @@ public class DAnalyticsHelper extends Application  {
         {
             elapsed = Objects.requireNonNullElse(Long.parseLong(Objects.requireNonNullElse(screentime.get(screenName),0.0).toString().split("\\.")[0]) + elapsed,elapsed);
             screentime.put(screenName,elapsed);
-            Log.i("elapsed--",""+elapsed);
+
+
             data.put("analytics", screentime);
         }
         else {
@@ -242,8 +239,7 @@ public class DAnalyticsHelper extends Application  {
             data.put("identity", getSHA1Fingerprint(application.getApplicationContext()));
         }
 
-
-
+        Log.i("DevApps","analytics="+screentime);
         editor.putString("timeline", gson.toJson( data));
         // Set the flag
         editor.apply();
@@ -256,20 +252,25 @@ public class DAnalyticsHelper extends Application  {
 
         super.onCreate();
         application = this;
-        Log.i("application=", String.valueOf(application));
+        Log.i("DevApps","application="+ String.valueOf(application));
         registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             @Override
-            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-                Log.i("onActivityCreated=","onActivityCreated..."+isDeepLinkHandled);
+            public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
+                Log.i("DevApps","onActivityCreated..."+isDeepLinkHandled);
                 if(!isDeepLinkHandled) {
                     Intent intent = activity.getIntent();
                     Uri uri = intent.getData();
-
-                    if (uri != null) {
+                    Log.i("DevApps",getDeeplink());
+                    Log.i("DevApps",uri.toString());
+                    if (uri != null && uri.toString().equals(getDeeplink())) {
 
                         String itemId = uri.getQueryParameter("id");
                         assert itemId != null;
-                        Log.i("ID==", itemId);
+                        Log.i("DevApps","ID=="+ itemId);
+                        SharedPreferences sharedPreferences = activity.getSharedPreferences(SCREEN_ANALYTICS, MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("referer",itemId);
+                        editor.apply();
                         isDeepLinkHandled = Boolean.TRUE;
 
                     }
@@ -278,13 +279,13 @@ public class DAnalyticsHelper extends Application  {
             }
 
             @Override
-            public void onActivityStarted(Activity activity) {
+            public void onActivityStarted(@NonNull Activity activity) {
                 // Activity is started
             }
 
             @Override
-            public void onActivityResumed(Activity activity) {
-                Log.i("onActivityCreated=","onActivityResumed..."+isDeepLinkHandled);
+            public void onActivityResumed(@NonNull Activity activity) {
+                Log.i("DevApps","onActivityResumed..."+isDeepLinkHandled);
                 if (!ACTIVITY_EVENT_RESUMED) {
                     ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                     ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
@@ -293,8 +294,23 @@ public class DAnalyticsHelper extends Application  {
             }
 
             @Override
-            public void onActivityPaused(Activity activity) {
-                // Activity is paused
+            public void onActivityPaused(@NonNull Activity activity) {
+                if (!ACTIVITY_EVENT_PAUSED) {
+                    ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
+                    ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
+
+                    SharedPreferences sharedPreferences = activity.getSharedPreferences(SCREEN_ANALYTICS, MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    // App goes to background
+                    long endTime = SystemClock.elapsedRealtime();
+                    long usageTime = endTime - startTime; // Time in milliseconds
+                    long savedUsage = sharedPreferences.getLong("usage", 0);
+                    editor.putLong("usage", savedUsage + usageTime);//
+                    Log.i("DevApps","usage..."+ usageTime);
+                    Log.i("DevApps","total usage..."+ savedUsage + usageTime);
+                    editor.apply();
+
+                }
             }
 
             @Override
@@ -312,120 +328,14 @@ public class DAnalyticsHelper extends Application  {
                 // Activity is destroyed
             }
         });
-
-    }
-
-
-    // Method to monitor app usage with API key validation
-   public void monitorAppUsage(@NotNull Application application ) {
-
-        application.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
-
-
-
-                                               @Override
-                                               public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
-                                                   Log.i("onActivityCreated=","onActivityCreated..."+isDeepLinkHandled);
-                                                   if(!isDeepLinkHandled) {
-                                                       Intent intent = activity.getIntent();
-                                                       Uri uri = intent.getData();
-
-                                                       if (uri != null) {
-
-                                                           String itemId = uri.getQueryParameter("id");
-                                                           assert itemId != null;
-                                                           Log.i("ID==", itemId);
-                                                           isDeepLinkHandled = Boolean.TRUE;
-
-                                                       }
-                                                   }
-
-                                               }
-
-                                               @Override
-                                               public void onActivityStarted(@NonNull Activity activity) {
-                                                   Log.i("onActivityCreated=","onActivityStarted..."+isDeepLinkHandled);
-                                               }
-
-                                               @Override
-                                               public void onActivityResumed(@NonNull Activity activity) {
-                                                   Log.i("onActivityCreated=","onActivityResumed..."+isDeepLinkHandled);
-                                                   if (!ACTIVITY_EVENT_RESUMED) {
-                                                       ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
-                                                       ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
-                                                       startTime = SystemClock.elapsedRealtime();
-                                                   }
-                                                   if(!isDeepLinkHandled) {
-                                                       Intent intent = activity.getIntent();
-                                                       Uri uri = intent.getData();
-
-                                                       if (uri != null) {
-
-                                                           String itemId = uri.getQueryParameter("id");
-                                                           assert itemId != null;
-                                                           Log.i("ID==", itemId);
-                                                           isDeepLinkHandled = Boolean.TRUE;
-
-                                                       }
-                                                   }
-                                               }
-
-                                               @Override
-                                               public void onActivityPaused(@NonNull Activity activity) {
-                                                   if (!ACTIVITY_EVENT_PAUSED) {
-                                                       ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
-                                                       ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
-
-                                                       SharedPreferences sharedPreferences = activity.getSharedPreferences(SCREEN_ANALYTICS, MODE_PRIVATE);
-                                                       SharedPreferences.Editor editor = sharedPreferences.edit();
-                                                       // App goes to background
-                                                       long endTime = SystemClock.elapsedRealtime();
-                                                       long usageTime = endTime - startTime; // Time in milliseconds
-                                                       long savedUsage = sharedPreferences.getLong("usage", 0);
-                                                       editor.putLong("usage", savedUsage + usageTime);//
-
-                                                       editor.apply();
-
-                                                   }
-                                               }
-
-                                               @Override
-                                               public void onActivityStopped(@NonNull Activity activity) {
-
-                                               }
-
-                                               @Override
-                                               public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
-                                               }
-
-                                               @Override
-                                               public void onActivityDestroyed(@NonNull Activity activity) {
-                                               }
-
-
-        });
-    }
-
-    private void logAppUsageTime(@NonNull String userId,@NonNull long usageTime,@NonNull String appId,String... identity) {
-        if ( appId.isEmpty()) {
-            Log.e("devapps","App Id is required to log events.");
-            return;
+        if(!isPeriodicTaskScheduled())
+        {
+            schedulePeriodicTask();
+            markPeriodicTaskScheduled();
         }
-        //executorService = executorService == null ? Executors.newSingleThreadExecutor():executorService;
-        Map<String, Object> data = new HashMap<>();
-        data.put("userid", userId);
-        data.put("usagetime", usageTime);
-        data.put("appid", appId);
-        data.put("identity", identity != null ? identity[0] : getSHA1Fingerprint(this));
-//        executorService.execute(()-> {
-//            try {
-//
-//                callCloudFunction(data,getServiceUrl() + CLOUD_FUNCTION_URL_LOG_USGAE);
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        });
+
     }
+
 
 
 }
