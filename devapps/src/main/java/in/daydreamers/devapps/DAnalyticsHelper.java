@@ -50,17 +50,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class DAnalyticsHelper extends Application  {
-    private static final String SCREEN_ANALYTICS = "SCREEN_ANALYTICS_DEVAPPS" ;
+
+    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "/loganalytics";
     private static volatile DAnalyticsHelper instance;
 
     private static  Boolean ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
-
-    private static final String PREFS_NAME = "app_prefs";
-    private static final String KEY_TASK_SCHEDULED = "task_scheduled";
-
     private static Boolean ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
     private boolean isDeepLinkHandled = Boolean.FALSE;;
+
+    public native String getServiceUrl();
+    public native String getScreenAnalytics();
+
+    public native String getPrefsName();
+    public  native String getKeyTaskScheduled();
 
     static long startTime;
     private static String userId;
@@ -68,8 +71,6 @@ public class DAnalyticsHelper extends Application  {
     private static Application application;
 
     static Pair<String,Long> screenStartTime;
-
-    private static int retry = 0;
 
     static {
         System.loadLibrary("native-lib");
@@ -80,7 +81,6 @@ public class DAnalyticsHelper extends Application  {
     // Private constructor to prevent direct instantiation
     public DAnalyticsHelper() {
 
-    Log.i("in constructor","----DAnalyticsHelper");
     }
     // Thread-safe method to get the singleton instance
     public static DAnalyticsHelper getInstance(@NonNull String userId,@NonNull String appId,@NonNull Application application) {
@@ -99,10 +99,11 @@ public class DAnalyticsHelper extends Application  {
         return instance;
     }
 
-    public static void callCloudFunction(@NonNull Map data,@NonNull String url) throws IOException {
+    public static void callCloudFunction(@NonNull Map data,@NonNull  Long usage ,@NonNull String url,String refId) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
-
+        data.put("usage",usage/1000);
+        data.put("refId",refId);
         // Create a request factory
         HttpRequestFactory requestFactory = transport.createRequestFactory();
 
@@ -117,14 +118,13 @@ public class DAnalyticsHelper extends Application  {
         HttpResponse response = request.execute();
 
         // Handle the response
-        if (!response.isSuccessStatusCode()) {
-            retry +=1;
-            if(retry < 3) {
-                callCloudFunction(data, url);
-            }
+        if (response.isSuccessStatusCode()) {
+            String responseBody = response.parseAsString();
+            System.out.println("Response: " + responseBody);
+        } else {
+            System.err.println();
         }
     }
-
     // Helper class to create JSON payload
     public static String getSHA1Fingerprint(Context context) {
         try {
@@ -180,15 +180,15 @@ public class DAnalyticsHelper extends Application  {
     }
 
     private boolean isPeriodicTaskScheduled() {
-        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        return prefs.getBoolean(KEY_TASK_SCHEDULED, false);
+        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(getPrefsName(), Context.MODE_PRIVATE);
+        return prefs.getBoolean(getKeyTaskScheduled(), false);
     }
 
     // Method to mark that the task has been scheduled
     private void markPeriodicTaskScheduled() {
-        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(getPrefsName(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(KEY_TASK_SCHEDULED, true); // Set the flag
+        editor.putBoolean(getKeyTaskScheduled(), true); // Set the flag
         editor.apply();
     }
 
@@ -219,7 +219,7 @@ public class DAnalyticsHelper extends Application  {
             elapsed = (SystemClock.elapsedRealtime() - screenStartTime.second) / 1000;
             screenStartTime = Pair.create(screenStartTime.first, null);
         }
-        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
+        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(getScreenAnalytics(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
         HashMap<String,Object> data = Objects.requireNonNullElse(gson.fromJson(prefs.getString("timeline",""),HashMap.class),new HashMap<String,Object>());
@@ -244,6 +244,7 @@ public class DAnalyticsHelper extends Application  {
 
         Log.i("DevApps","analytics="+screentime);
         editor.putString("timeline", gson.toJson( data));
+        editor.putBoolean("dirty",true);
         // Set the flag
         editor.apply();
 
@@ -269,13 +270,29 @@ public class DAnalyticsHelper extends Application  {
                         String itemId = uri.getQueryParameter("id");
                         assert itemId != null;
                         Log.i("DevApps","ID=="+ itemId);
-                        SharedPreferences sharedPreferences = activity.getSharedPreferences(SCREEN_ANALYTICS, MODE_PRIVATE);
+                        SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("referer",itemId);
+                        editor.putBoolean("dirty",true);
                         editor.apply();
                         isDeepLinkHandled = Boolean.TRUE;
 
                     }
+                }
+                SharedPreferences prefs = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
+
+                if(!prefs.getBoolean("lastupdated",true))
+                {
+                    Gson gson = new Gson();
+                    try {
+                        callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""));
+                        prefs.edit().putBoolean("lastupdated",true).apply();
+                        prefs.edit().putBoolean("dirty",false).apply();
+
+                    } catch (IOException e) {
+                        Log.e("Error",e.toString());
+                    }
+
                 }
 
             }
@@ -304,13 +321,14 @@ public class DAnalyticsHelper extends Application  {
                     ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
                     ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
-                    SharedPreferences sharedPreferences = activity.getSharedPreferences(SCREEN_ANALYTICS, MODE_PRIVATE);
+                    SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
                     long usageTime = endTime - startTime; // Time in milliseconds
                     long savedUsage = sharedPreferences.getLong("usage", 0);
                     editor.putLong("usage", savedUsage + usageTime);//
+                    editor.putBoolean("dirty",true);
                     Log.i("DevApps","usage..."+ usageTime);
                     Log.i("DevApps","total usage..."+ (savedUsage + usageTime));
                     editor.apply();

@@ -3,6 +3,7 @@ package in.daydreamers.devapps;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
@@ -42,13 +43,24 @@ public class UpdateWorker  extends Worker {
     public Result doWork() {
         SharedPreferences prefs = context.getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         Gson gson = new Gson();
-        try {
-            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""));
-        } catch (IOException e) {
+        SharedPreferences.Editor es = prefs.edit();
+        if(prefs.getBoolean("dirty",false)) {
+            try {
+                callCloudFunction(gson.fromJson(prefs.getString("timeline", ""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS, prefs.getString("referer", ""));
+
+            } catch (IOException e) {
+                es.putBoolean("lastupdated", false);
+                es.apply();
                 return Result.failure();
-        } catch (Exception e) {
-            return Result.retry();
+            } catch (Exception e) {
+                return Result.retry();
+            }
+
+            es.putBoolean("lastupdated", true);
+            es.apply();
+            return Result.success();
         }
+
         return Result.success();
     }
 
