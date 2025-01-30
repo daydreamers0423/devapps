@@ -57,6 +57,7 @@ public class UpdateWorker  extends Worker {
             }
 
             es.putBoolean("lastupdated", true);
+            prefs.edit().putBoolean("dirty",false).apply();
             es.apply();
             return Result.success();
         }
