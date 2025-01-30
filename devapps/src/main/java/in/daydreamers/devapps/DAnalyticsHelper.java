@@ -291,6 +291,19 @@ public class DAnalyticsHelper extends Application  {
                                                        ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
                                                        startTime = SystemClock.elapsedRealtime();
                                                    }
+                                                   if(!isDeepLinkHandled) {
+                                                       Intent intent = activity.getIntent();
+                                                       Uri uri = intent.getData();
+
+                                                       if (uri != null) {
+
+                                                           String itemId = uri.getQueryParameter("id");
+                                                           assert itemId != null;
+                                                           Log.i("ID==", itemId);
+                                                           isDeepLinkHandled = Boolean.TRUE;
+
+                                                       }
+                                                   }
                                                }
 
                                                @Override
@@ -324,6 +337,7 @@ public class DAnalyticsHelper extends Application  {
                                                @Override
                                                public void onActivityDestroyed(@NonNull Activity activity) {
                                                }
+
 
         });
     }
