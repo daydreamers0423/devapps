@@ -310,7 +310,7 @@ public class DAnalyticsHelper extends Application  {
                     Log.i("DevApps","usage..."+ usageTime);
                     Log.i("DevApps","total usage..."+ savedUsage + usageTime);
                     editor.apply();
-                    if(screenStartTime != null) {
+                    if(screenStartTime != null && screenStartTime.second != null) {
                         logScreenView(screenStartTime.first);
                     }
 
