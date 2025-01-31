@@ -198,7 +198,7 @@ public class DAnalyticsHelper extends Application  {
             return;
         }
 
-        screenStartTime = new Pair<>(screenName,SystemClock.elapsedRealtime());
+        screenStartTime = Pair.create(screenName,SystemClock.elapsedRealtime());
     }
 
     /**
@@ -214,8 +214,7 @@ public class DAnalyticsHelper extends Application  {
         if(screenName.equals(screenStartTime.first)) {
             elapsed = (SystemClock.elapsedRealtime() - screenStartTime.second) / 1000;
         }
-
-
+        screenStartTime = Pair.create(screenStartTime.first,null);
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
@@ -289,6 +288,7 @@ public class DAnalyticsHelper extends Application  {
                     ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                     ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
                     startTime = SystemClock.elapsedRealtime();
+                    screenStartTime = Pair.create(screenStartTime.first, SystemClock.elapsedRealtime());
                 }
             }
 
