@@ -245,7 +245,6 @@ public class DAnalyticsHelper extends Application  {
         editor.apply();
 
 
-
     }
     @Override
     public void onCreate(){
@@ -309,6 +308,7 @@ public class DAnalyticsHelper extends Application  {
                     Log.i("DevApps","usage..."+ usageTime);
                     Log.i("DevApps","total usage..."+ savedUsage + usageTime);
                     editor.apply();
+                    logScreenView(screenStartTime.first);
 
                 }
             }
