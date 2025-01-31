@@ -288,7 +288,9 @@ public class DAnalyticsHelper extends Application  {
                     ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                     ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
                     startTime = SystemClock.elapsedRealtime();
-                    screenStartTime = Pair.create(screenStartTime.first, SystemClock.elapsedRealtime());
+                    if(screenStartTime != null) {
+                        screenStartTime = Pair.create(screenStartTime.first, SystemClock.elapsedRealtime());
+                    }
                 }
             }
 
