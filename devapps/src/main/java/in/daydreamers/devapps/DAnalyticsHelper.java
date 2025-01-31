@@ -205,16 +205,19 @@ public class DAnalyticsHelper extends Application  {
      *
      * @param screenName - Name of the screen or activity
      */
-    public void logScreenView(@NonNull String screenName) {
+    public void logScreenView(@NonNull String screenName,boolean... paused) {
         if (appId.isEmpty()) {
             Log.e("DevApps","App ID is required to log events.");
             return;
         }
         long elapsed = 0L;
-        if(screenName.equals(screenStartTime.first)) {
+        if(screenName.equals(screenStartTime.first) && paused == null) {
             elapsed = (SystemClock.elapsedRealtime() - screenStartTime.second) / 1000;
+            screenStartTime = Pair.create(null,null);
         }
-        screenStartTime = Pair.create(screenStartTime.first,null);
+        else {
+            screenStartTime = Pair.create(screenStartTime.first, null);
+        }
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
@@ -308,10 +311,10 @@ public class DAnalyticsHelper extends Application  {
                     long savedUsage = sharedPreferences.getLong("usage", 0);
                     editor.putLong("usage", savedUsage + usageTime);//
                     Log.i("DevApps","usage..."+ usageTime);
-                    Log.i("DevApps","total usage..."+ savedUsage + usageTime);
+                    Log.i("DevApps","total usage..."+ (savedUsage + usageTime));
                     editor.apply();
                     if(screenStartTime != null && screenStartTime.second != null) {
-                        logScreenView(screenStartTime.first);
+                        logScreenView(screenStartTime.first,true);
                     }
 
                 }
