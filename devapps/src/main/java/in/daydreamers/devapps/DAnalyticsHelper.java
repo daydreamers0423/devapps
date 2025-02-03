@@ -58,7 +58,7 @@ public class DAnalyticsHelper extends Application  {
     private static Boolean ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
     private boolean isDeepLinkHandled = Boolean.FALSE;;
-
+    private ExecutorService executorService;
     public native String getServiceUrl();
     public native String getScreenAnalytics();
 
@@ -210,6 +210,7 @@ public class DAnalyticsHelper extends Application  {
             Log.e("DevApps","App ID is required to log events.");
             return;
         }
+        executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
         long elapsed = 0L;
         if(screenName.equals(screenStartTime.first) && paused == null) {
             elapsed = (SystemClock.elapsedRealtime() - screenStartTime.second) / 1000;
@@ -285,11 +286,19 @@ public class DAnalyticsHelper extends Application  {
                 {
                     Gson gson = new Gson();
                     try {
-                        callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""));
+                        executorService.execute(()-> {
+                            try {
+
+                                callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""));
+                            } catch (IOException e) {
+                                Log.e("Error",e.toString());
+                            }
+                        });
+
                         prefs.edit().putBoolean("lastupdated",true).apply();
                         prefs.edit().putBoolean("dirty",false).apply();
 
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         Log.e("Error",e.toString());
                     }
 
