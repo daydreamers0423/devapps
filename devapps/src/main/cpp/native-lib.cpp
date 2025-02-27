@@ -10,14 +10,14 @@ extern "C"
 JNIEXPORT jstring  JNICALL
 Java_in_daydreamers_devapps_UpdateWorker_getServiceUrl(JNIEnv *env, jobject thiz) {
 // Return the service URL
-return env->NewStringUTF("http://192.168.47.226:50001/devapps-446507/us-central1");
+return env->NewStringUTF("https://us-central1-devapps-446507.cloudfunctions.net");
 }
 
 extern "C"
 JNIEXPORT jstring  JNICALL
 Java_in_daydreamers_devapps_DAnalyticsHelper_getServiceUrl(JNIEnv *env, jobject thiz) {
 // Return the service URL
-    return env->NewStringUTF("http://192.168.47.226:50001/devapps-446507/us-central1");
+    return env->NewStringUTF("https://us-central1-devapps-446507.cloudfunctions.net");
 }
 
 extern "C"

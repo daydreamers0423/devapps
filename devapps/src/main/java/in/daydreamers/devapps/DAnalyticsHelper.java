@@ -70,6 +70,7 @@ public class DAnalyticsHelper extends Application  {
     private static String appId;
     private static Application application;
 
+
     static Pair<String,Long> screenStartTime;
 
     static {
@@ -269,20 +270,24 @@ public class DAnalyticsHelper extends Application  {
                         Log.i("DevApps",getDeeplink());
                         Log.i("DevApps",uri.toString());
                         String itemId = uri.getQueryParameter("id");
-                        assert itemId != null;
-                        Log.i("DevApps","ID=="+ itemId);
-                        SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("referer",itemId);
-                        editor.putBoolean("dirty",true);
-                        editor.apply();
-                        isDeepLinkHandled = Boolean.TRUE;
-
+                        if(itemId != null) {
+                            Log.i("DevApps", "ID==" + itemId);
+                            SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("referer", itemId);
+                            editor.putBoolean("dirty", true);
+                            editor.apply();
+                            isDeepLinkHandled = Boolean.TRUE;
+                        }
                     }
                 }
                 SharedPreferences prefs = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
-
-                if(!prefs.getBoolean("lastupdated",true))
+                if(!isPeriodicTaskScheduled() && !prefs.getString("referer","").isEmpty())
+                {
+                    schedulePeriodicTask();
+                    markPeriodicTaskScheduled();
+                }
+                if(!prefs.getBoolean("lastupdated",true) && !prefs.getString("referer","").isEmpty())
                 {
                     Gson gson = new Gson();
                     try {
@@ -313,8 +318,8 @@ public class DAnalyticsHelper extends Application  {
 
             @Override
             public void onActivityResumed(@NonNull Activity activity) {
-                Log.i("DevApps","onActivityResumed..."+isDeepLinkHandled);
-                if (!ACTIVITY_EVENT_RESUMED) {
+                SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
+                if (!ACTIVITY_EVENT_RESUMED && !sharedPreferences.getString("referer","").isEmpty()) {
                     ACTIVITY_EVENT_RESUMED = Boolean.TRUE;
                     ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
                     startTime = SystemClock.elapsedRealtime();
@@ -326,11 +331,12 @@ public class DAnalyticsHelper extends Application  {
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
-                if (!ACTIVITY_EVENT_PAUSED) {
+                SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
+                if (!ACTIVITY_EVENT_PAUSED && !sharedPreferences.getString("referer","").isEmpty()) {
                     ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
                     ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
-                    SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
+
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
@@ -363,11 +369,7 @@ public class DAnalyticsHelper extends Application  {
                 // Activity is destroyed
             }
         });
-        if(!isPeriodicTaskScheduled())
-        {
-            schedulePeriodicTask();
-            markPeriodicTaskScheduled();
-        }
+
 
     }
 
