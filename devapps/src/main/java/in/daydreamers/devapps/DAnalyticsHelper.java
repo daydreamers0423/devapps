@@ -127,7 +127,7 @@ public class DAnalyticsHelper extends Application  {
         }
     }
     // Helper class to create JSON payload
-    public static String getSHA1Fingerprint(Context context) {
+    public static String getSHA256Fingerprint(Context context) {
         try {
             // Get the package manager and package info
             PackageManager packageManager = context.getPackageManager();
@@ -140,7 +140,7 @@ public class DAnalyticsHelper extends Application  {
             Signature signature = packageInfo.signatures[0];
 
             // Calculate the SHA-1 hash
-            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hashBytes = digest.digest(signature.toByteArray());
 
             // Convert hash bytes to a hex string
@@ -241,7 +241,7 @@ public class DAnalyticsHelper extends Application  {
             data.put("analytics", screentime);
             data.put("userid", userId);
             data.put("appid", appId);
-            data.put("identity", getSHA1Fingerprint(application.getApplicationContext()));
+            data.put("identity", getSHA256Fingerprint(application.getApplicationContext()));
         }
 
         Log.i("DevApps","analytics="+screentime);
@@ -261,7 +261,7 @@ public class DAnalyticsHelper extends Application  {
         registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
-                Log.i("DevApps","onActivityCreated..."+isDeepLinkHandled);
+                Log.i("DevApps","onActivityCreated..."+application.toString());
                 if(!isDeepLinkHandled) {
                     Intent intent = activity.getIntent();
                     Uri uri = intent.getData();
