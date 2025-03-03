@@ -265,11 +265,11 @@ public class DAnalyticsHelper extends Application  {
                 if(!isDeepLinkHandled) {
                     Intent intent = activity.getIntent();
                     Uri uri = intent.getData();
-
+                    Log.i("DevApps", String.valueOf(uri));
                     if (uri != null && uri.toString().startsWith(getDeeplink())) {
                         Log.i("DevApps",getDeeplink());
                         Log.i("DevApps",uri.toString());
-                        String itemId = uri.getQueryParameter("id");
+                        String itemId = uri.getQueryParameter("refId");
                         if(itemId != null) {
                             Log.i("DevApps", "ID==" + itemId);
                             SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
