@@ -82,5 +82,6 @@ dependencies {
    implementation(libs.google.http.client.android)
    implementation(libs.google.http.client.gson)// Optional for JSON parsing
     implementation("androidx.work:work-runtime:2.9.1")
+    implementation("com.android.installreferrer:installreferrer:2.2")
 
 }

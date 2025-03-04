@@ -252,6 +252,7 @@ public class DAnalyticsHelper extends Application  {
 
 
     }
+
     @Override
     public void onCreate(){
 
@@ -259,6 +260,7 @@ public class DAnalyticsHelper extends Application  {
         application = this;
         Log.i("DevApps","application="+ String.valueOf(application));
         registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+
             @Override
             public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
                 Log.i("DevApps","onActivityCreated..."+activity.toString());
