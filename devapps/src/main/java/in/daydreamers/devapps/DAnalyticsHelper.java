@@ -7,16 +7,19 @@ import android.content.SharedPreferences;
 import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
 import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
+import com.android.installreferrer.api.InstallReferrerClient;
+import com.android.installreferrer.api.InstallReferrerStateListener;
+import com.android.installreferrer.api.ReferrerDetails;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -24,10 +27,7 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
-import com.google.api.client.json.Json;
 import com.google.api.client.json.gson.GsonFactory;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.functions.FirebaseFunctions;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -38,8 +38,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 import android.util.Pair;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -258,6 +256,11 @@ public class DAnalyticsHelper extends Application  {
 
         super.onCreate();
         application = this;
+        SharedPreferences prefs = application.getSharedPreferences(getScreenAnalytics(),MODE_PRIVATE);
+        if(!prefs.getBoolean("ref_processed",false)) {
+            getInstallReferer(application);
+
+        }
         Log.i("DevApps","application="+ String.valueOf(application));
         registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
 
@@ -375,6 +378,55 @@ public class DAnalyticsHelper extends Application  {
 
     }
 
+    private void getInstallReferer(Application application) {
+        InstallReferrerClient referrerClient;
+
+        referrerClient = InstallReferrerClient.newBuilder(this).build();
+        referrerClient.startConnection(new InstallReferrerStateListener() {
+            @Override
+            public void onInstallReferrerSetupFinished(int responseCode) {
+                switch (responseCode) {
+
+                    case InstallReferrerClient.InstallReferrerResponse.OK:
+                        ReferrerDetails response;
+                        try {
+                            response = referrerClient.getInstallReferrer();
+                            Log.i("DevApps->", response.getInstallReferrer());
+                            SharedPreferences.Editor editor = application.getSharedPreferences(getScreenAnalytics(),Context.MODE_PRIVATE).edit();
+                            String referrerUrl = response.getInstallReferrer();
+                            if (referrerUrl != null && referrerUrl.startsWith(getDeeplink())) {
+                                Uri uri = Uri.parse(referrerUrl);
+                                Log.i("DevApps->",referrerUrl);
+                                Log.i("DevApps->", Objects.requireNonNull(uri.getQueryParameter("refId")));
+                                editor.putString("referer", uri.getQueryParameter("refId"));
+                                editor.putBoolean("dirty", true);
+                                editor.apply();
+                                isDeepLinkHandled = Boolean.TRUE;
+                            }
+
+
+                            editor.putBoolean("ref_processed", true);
+                            editor.apply();
+                        } catch (RemoteException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+
+                    case InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED:
+                        // API not available on the current Play Store app.
+                        break;
+                    case InstallReferrerClient.InstallReferrerResponse.SERVICE_UNAVAILABLE:
+                        // Connection couldn't be established.
+                        break;
+                }
+            }
+
+            @Override
+            public void onInstallReferrerServiceDisconnected() {
+
+            }
+        });
+    }
 
 
 }
