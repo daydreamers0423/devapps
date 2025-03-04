@@ -261,7 +261,7 @@ public class DAnalyticsHelper extends Application  {
         registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
             @Override
             public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
-                Log.i("DevApps","onActivityCreated..."+application.toString());
+                Log.i("DevApps","onActivityCreated..."+activity.toString());
                 if(!isDeepLinkHandled) {
                     Intent intent = activity.getIntent();
                     Uri uri = intent.getData();
