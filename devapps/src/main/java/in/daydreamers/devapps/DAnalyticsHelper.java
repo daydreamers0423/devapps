@@ -31,6 +31,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import android.content.Context;
@@ -43,6 +44,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -224,19 +226,29 @@ public class DAnalyticsHelper extends Application  {
         Gson gson = new Gson();
         HashMap<String,Object> data = Objects.requireNonNullElse(gson.fromJson(prefs.getString("timeline",""),HashMap.class),new HashMap<String,Object>());
 
+        long utcTimeMillis = DevAppsTime.getCurrentTimeFromNTP();
+
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.setTimeInMillis(utcTimeMillis);
+
         Map<String,Object> screentime = (Map<String, Object>) Objects.requireNonNullElse(data.get("analytics"),new HashMap<String,Object>());
-        if(!screentime.isEmpty())
+        Map<String,Object> existingMap = (Map<String, Object>) Objects.requireNonNullElse(screentime.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ calendar.get(Calendar.MONTH)+"-"+ calendar.get(Calendar.YEAR)),new HashMap<String,Object>());
+        if(!screentime.isEmpty() &&  !existingMap.isEmpty())
         {
-            elapsed = Objects.requireNonNullElse(Long.parseLong(Objects.requireNonNullElse(screentime.get(screenName),0.0).toString().split("\\.")[0]) + elapsed,elapsed);
+
+            elapsed = Objects.requireNonNullElse(Long.parseLong(Objects.requireNonNullElse(existingMap.get(screenName),0.0).toString().split("\\.")[0]) + elapsed,elapsed);
             screentime.put(screenName,elapsed);
 
-
-            data.put("analytics", screentime);
+            //HashMap<String,Object> dateMap = new HashMap<>();
+            existingMap.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ calendar.get(Calendar.MONTH)+"-"+ calendar.get(Calendar.YEAR),screentime);
+            data.put("analytics", existingMap);
         }
         else {
 
             screentime.put(screenName, elapsed);
-            data.put("analytics", screentime);
+            HashMap<String,Object> dateMap = new HashMap<>();
+            dateMap.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ calendar.get(Calendar.MONTH)+"-"+ calendar.get(Calendar.YEAR),screentime);
+            data.put("analytics", dateMap);
             data.put("userid", userId);
             data.put("appid", appId);
             data.put("identity", getSHA256Fingerprint(application.getApplicationContext()));
@@ -256,6 +268,8 @@ public class DAnalyticsHelper extends Application  {
 
         super.onCreate();
         application = this;
+
+
         SharedPreferences prefs = application.getSharedPreferences(getScreenAnalytics(),MODE_PRIVATE);
         if(!prefs.getBoolean("ref_processed",false)) {
             getInstallReferer(application);
