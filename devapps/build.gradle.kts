@@ -75,7 +75,6 @@ publishing {
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
-    implementation(libs.firebase.functions)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

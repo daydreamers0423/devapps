@@ -28,6 +28,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
 import com.google.api.client.json.gson.GsonFactory;
+
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -45,6 +46,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -225,11 +227,24 @@ public class DAnalyticsHelper extends Application  {
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
         HashMap<String,Object> data = Objects.requireNonNullElse(gson.fromJson(prefs.getString("timeline",""),HashMap.class),new HashMap<String,Object>());
+        Long utcTimeMillis = Long.valueOf(0);
+        Callable<Long> task = new Callable<Long>() {
+            @Override
+            public Long call() {
+                return DevAppsTime.getCurrentTimeFromNTP();
+            }
+        };
+                    try {
+                        utcTimeMillis = executorService.submit(task).get();
+                        Log.i("DevApps:::1",utcTimeMillis+"---L");
+                    } catch (Exception e) {
+                        Log.e("DevApps:::1", e.toString());
+                    }
 
-        long utcTimeMillis = DevAppsTime.getCurrentTimeFromNTP();
-
+        Log.i("DevApps:::","time fetched");
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         calendar.setTimeInMillis(utcTimeMillis);
+        Log.i("DevApps:::",calendar.toString());
 
         Map<String,Object> screentime = (Map<String, Object>) Objects.requireNonNullElse(data.get("analytics"),new HashMap<String,Object>());
         Map<String,Object> existingMap = (Map<String, Object>) Objects.requireNonNullElse(screentime.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ calendar.get(Calendar.MONTH)+"-"+ calendar.get(Calendar.YEAR)),new HashMap<String,Object>());
