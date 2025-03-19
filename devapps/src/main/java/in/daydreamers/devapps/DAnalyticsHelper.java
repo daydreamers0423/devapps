@@ -301,7 +301,7 @@ public class DAnalyticsHelper extends Application  {
                     }
                 }
                 SharedPreferences prefs = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
-                if(!isPeriodicTaskScheduled() && !prefs.getString("referer","").isEmpty())
+                if(!isPeriodicTaskScheduled() && !prefs.getString("referer","test@test.com").isEmpty())
                 {
                     schedulePeriodicTask();
                     markPeriodicTaskScheduled();
