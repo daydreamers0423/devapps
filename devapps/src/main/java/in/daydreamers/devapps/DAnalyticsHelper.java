@@ -253,10 +253,11 @@ public class DAnalyticsHelper extends Application  {
         {
 
             elapsed = Objects.requireNonNullElse(Long.parseLong(Objects.requireNonNullElse(existingMap.get(screenName),0.0).toString().split("\\.")[0]) + elapsed,elapsed);
-            screentime.put(screenName,elapsed);
-
+            //screentime.put(screenName,elapsed);
+            Map<String,Object> time = (Map<String, Object>) Objects.requireNonNullElse(existingMap.get(screenName),new HashMap<String,Object>());
+            time.put(screenName,elapsed);
             //HashMap<String,Object> dateMap = new HashMap<>();
-            existingMap.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),screentime);
+            existingMap.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),time);
             data.put("analytics", existingMap);
             Log.i("DevApps","analyticsex="+existingMap);
             Log.i("DevApps","analyticsdata="+data);
