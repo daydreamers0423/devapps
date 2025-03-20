@@ -32,6 +32,7 @@ import com.google.api.client.json.gson.GsonFactory;
 import com.google.gson.Gson;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -245,7 +246,7 @@ public class DAnalyticsHelper extends Application  {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         calendar.setTimeInMillis(utcTimeMillis);
         Log.i("DevApps:::",calendar.toString());
-
+        DecimalFormat mFormat= new DecimalFormat("00");
         Map<String,Object> screentime = (Map<String, Object>) Objects.requireNonNullElse(data.get("analytics"),new HashMap<String,Object>());
         Map<String,Object> existingMap = (Map<String, Object>) Objects.requireNonNullElse(screentime.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ calendar.get(Calendar.MONTH)+"-"+ calendar.get(Calendar.YEAR)),new HashMap<String,Object>());
         if(!screentime.isEmpty() &&  !existingMap.isEmpty())
@@ -255,14 +256,14 @@ public class DAnalyticsHelper extends Application  {
             screentime.put(screenName,elapsed);
 
             //HashMap<String,Object> dateMap = new HashMap<>();
-            existingMap.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ calendar.get(Calendar.MONTH)+"-"+ calendar.get(Calendar.YEAR),screentime);
+            existingMap.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),screentime);
             data.put("analytics", existingMap);
         }
         else {
 
             screentime.put(screenName, elapsed);
             HashMap<String,Object> dateMap = new HashMap<>();
-            dateMap.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ calendar.get(Calendar.MONTH)+"-"+ calendar.get(Calendar.YEAR),screentime);
+            dateMap.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),screentime);
             data.put("analytics", dateMap);
             data.put("userid", userId);
             data.put("appid", appId);

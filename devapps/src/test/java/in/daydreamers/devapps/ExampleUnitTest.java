@@ -4,6 +4,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import android.util.Log;
+
+import java.text.DecimalFormat;
+import java.util.Calendar;
+import java.util.Objects;
+import java.util.TimeZone;
+
 /**
  * Example local unit test, which will execute on the development machine (host).
  *
@@ -12,6 +19,10 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
-        assertEquals(4, 2 + 2);
+
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.setTimeInMillis(DevAppsTime.getCurrentTimeFromNTP());
+        DecimalFormat mFormat= new DecimalFormat("00");
+        System.out.println("Test:::"+ (calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR)).toString());
     }
 }
