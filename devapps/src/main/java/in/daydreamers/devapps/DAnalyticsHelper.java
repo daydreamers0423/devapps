@@ -248,7 +248,7 @@ public class DAnalyticsHelper extends Application  {
         Log.i("DevApps:::",calendar.toString());
         DecimalFormat mFormat= new DecimalFormat("00");
         Map<String,Object> screentime = (Map<String, Object>) Objects.requireNonNullElse(data.get("analytics"),new HashMap<String,Object>());
-        Map<String,Object> existingMap = (Map<String, Object>) Objects.requireNonNullElse(screentime.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ calendar.get(Calendar.MONTH)+"-"+ calendar.get(Calendar.YEAR)),new HashMap<String,Object>());
+        Map<String,Object> existingMap = (Map<String, Object>) Objects.requireNonNullElse(screentime.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ (calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR)),new HashMap<String,Object>());
         if(!screentime.isEmpty() &&  !existingMap.isEmpty())
         {
 
@@ -258,6 +258,8 @@ public class DAnalyticsHelper extends Application  {
             //HashMap<String,Object> dateMap = new HashMap<>();
             existingMap.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),screentime);
             data.put("analytics", existingMap);
+            Log.i("DevApps","analyticsex="+existingMap);
+            Log.i("DevApps","analyticsdata="+data);
         }
         else {
 
@@ -268,9 +270,11 @@ public class DAnalyticsHelper extends Application  {
             data.put("userid", userId);
             data.put("appid", appId);
             data.put("identity", getSHA256Fingerprint(application.getApplicationContext()));
+            Log.i("DevApps","analytics="+dateMap);
+            Log.i("DevApps","analytics="+data);
         }
 
-        Log.i("DevApps","analytics="+screentime);
+
         editor.putString("timeline", gson.toJson( data));
         editor.putBoolean("dirty",true);
         // Set the flag
