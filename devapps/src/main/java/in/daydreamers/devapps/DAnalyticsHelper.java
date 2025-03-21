@@ -228,23 +228,7 @@ public class DAnalyticsHelper extends Application  {
         SharedPreferences.Editor editor = prefs.edit();
         Gson gson = new Gson();
         HashMap<String,Object> data = Objects.requireNonNullElse(gson.fromJson(prefs.getString("timeline",""),HashMap.class),new HashMap<String,Object>());
-        Long utcTimeMillis = Long.valueOf(0);
-        Callable<Long> task = new Callable<Long>() {
-            @Override
-            public Long call() {
-                return DevAppsTime.getCurrentTimeFromNTP();
-            }
-        };
-                    try {
-                        utcTimeMillis = executorService.submit(task).get();
-                        Log.i("DevApps:::1",utcTimeMillis+"---L");
-                    } catch (Exception e) {
-                        Log.e("DevApps:::1", e.toString());
-                    }
-
-        Log.i("DevApps:::","time fetched");
-        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        calendar.setTimeInMillis(utcTimeMillis);
+        Calendar calendar = getCurrentDate();
         Log.i("DevApps:::",calendar.toString());
         DecimalFormat mFormat= new DecimalFormat("00");
         Map<String,Object> screentime = (Map<String, Object>) Objects.requireNonNullElse(data.get("analytics"),new HashMap<String,Object>());
@@ -283,6 +267,27 @@ public class DAnalyticsHelper extends Application  {
         editor.apply();
 
 
+    }
+
+    private Calendar getCurrentDate() {
+        Long utcTimeMillis = Long.valueOf(0);
+        Callable<Long> task = new Callable<Long>() {
+            @Override
+            public Long call() {
+                return DevAppsTime.getCurrentTimeFromNTP();
+            }
+        };
+        try {
+            utcTimeMillis = executorService.submit(task).get();
+            Log.i("DevApps:::1",utcTimeMillis+"---L");
+        } catch (Exception e) {
+            Log.e("DevApps:::1", e.toString());
+        }
+
+        Log.i("DevApps:::","time fetched");
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        calendar.setTimeInMillis(utcTimeMillis);
+        return calendar;
     }
 
     @Override
@@ -382,11 +387,20 @@ public class DAnalyticsHelper extends Application  {
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
                     long usageTime = endTime - startTime; // Time in milliseconds
-                    long savedUsage = sharedPreferences.getLong("usage", 0);
-                    editor.putLong("usage", savedUsage + usageTime);//
-                    editor.putBoolean("dirty",true);
-                    Log.i("DevApps","usage..."+ usageTime);
-                    Log.i("DevApps","total usage..."+ (savedUsage + usageTime));
+                    //long savedUsage = sharedPreferences.getLong("usage", 0);
+                    Gson gson = new Gson();
+                    Calendar calendar = getCurrentDate();
+                    Map<String,Object> usage = Objects.requireNonNullElse(gson.fromJson(sharedPreferences.getString("usage",""),HashMap.class),new HashMap<String,Long>());
+                    DecimalFormat mFormat= new DecimalFormat("00");
+                    Long dayUsage = (Long) Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0L);
+
+                        usageTime = dayUsage + usageTime;
+
+                        usage.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),usageTime);
+                        editor.putString("usage",gson.toJson(usage));
+                        Log.i("DevApps","usage="+usage);
+                        Log.i("DevApps","usage1="+sharedPreferences.getString("usage",""));
+
                     editor.apply();
                     if(screenStartTime != null && screenStartTime.second != null) {
                         logScreenView(screenStartTime.first,true);
