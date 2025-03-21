@@ -249,6 +249,7 @@ public class DAnalyticsHelper extends Application  {
         DecimalFormat mFormat= new DecimalFormat("00");
         Map<String,Object> screentime = (Map<String, Object>) Objects.requireNonNullElse(data.get("analytics"),new HashMap<String,Object>());
         Map<String,Object> existingMap = (Map<String, Object>) Objects.requireNonNullElse(screentime.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ (calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR)),new HashMap<String,Object>());
+        Log.i("DevApps","existingMap="+existingMap);
         if(!screentime.isEmpty() &&  !existingMap.isEmpty())
         {
 
