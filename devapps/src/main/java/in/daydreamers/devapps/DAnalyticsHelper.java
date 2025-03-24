@@ -396,7 +396,7 @@ public class DAnalyticsHelper extends Application  {
                     Calendar calendar = getCurrentDate();
                     Map<String,Object> usage = Objects.requireNonNullElse(gson.fromJson(sharedPreferences.getString("usage",""),HashMap.class),new HashMap<String,Long>());
                     DecimalFormat mFormat= new DecimalFormat("00");
-                    Long dayUsage = (Long) Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0L)/ 1000;
+                    Long dayUsage = (Long)((Long)Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0L) / 1000);
 
                         usageTime = dayUsage + usageTime;
 
