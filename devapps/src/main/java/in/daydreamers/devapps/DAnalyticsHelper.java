@@ -378,7 +378,7 @@ public class DAnalyticsHelper extends Application  {
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
                 SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
-                if (!ACTIVITY_EVENT_PAUSED && !sharedPreferences.getString("referer","").isEmpty()) {
+                if (!ACTIVITY_EVENT_PAUSED && !sharedPreferences.getString("referer","test@t.com").isEmpty()) {
                     ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
                     ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
