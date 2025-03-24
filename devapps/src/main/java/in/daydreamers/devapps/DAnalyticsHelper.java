@@ -278,6 +278,10 @@ public class DAnalyticsHelper extends Application  {
             }
         };
         try {
+            if(executorService == null )
+            {
+                executorService = Executors.newSingleThreadExecutor();
+            }
             utcTimeMillis = executorService.submit(task).get();
             Log.i("DevApps:::1",utcTimeMillis+"---L");
         } catch (Exception e) {
