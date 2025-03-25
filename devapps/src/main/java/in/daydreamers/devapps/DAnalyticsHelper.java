@@ -283,14 +283,16 @@ public class DAnalyticsHelper extends Application  {
                 executorService = Executors.newSingleThreadExecutor();
             }
             utcTimeMillis = executorService.submit(task).get();
-            Log.i("DevApps:::1",utcTimeMillis+"---L");
+
         } catch (Exception e) {
             Log.e("DevApps:::1", e.toString());
         }
 
-        Log.i("DevApps:::","time fetched");
+
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        calendar.setTimeInMillis(utcTimeMillis);
+        if(utcTimeMillis != 0) {
+            calendar.setTimeInMillis(utcTimeMillis);
+        }
         return calendar;
     }
 
@@ -332,7 +334,7 @@ public class DAnalyticsHelper extends Application  {
                     }
                 }
                 SharedPreferences prefs = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
-                if(!isPeriodicTaskScheduled() && !prefs.getString("referer","test@test.com").isEmpty())
+                if(!isPeriodicTaskScheduled() && !prefs.getString("referer","").isEmpty())
                 {
                     schedulePeriodicTask();
                     markPeriodicTaskScheduled();
@@ -381,10 +383,10 @@ public class DAnalyticsHelper extends Application  {
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
-                Log.i("DevApps","in paused..");
+
                 SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
-                if (!ACTIVITY_EVENT_PAUSED && !sharedPreferences.getString("referer","test@t.com").isEmpty()) {
-                    Log.i("DevApps","in paused..& in if");
+                if (!ACTIVITY_EVENT_PAUSED && !sharedPreferences.getString("referer","").isEmpty()) {
+
                     ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
                     ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
@@ -399,13 +401,12 @@ public class DAnalyticsHelper extends Application  {
                     Map<String,Object> usage = Objects.requireNonNullElse(gson.fromJson(sharedPreferences.getString("usage",""),HashMap.class),new HashMap<String,Long>());
                     DecimalFormat mFormat= new DecimalFormat("00");
                     Long dayUsage = (Long) Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0L);
-                        Log.i("DevApps",dayUsage.toString());
+
                         usageTime = (long) ((dayUsage / 1000L) + usageTime);
 
                         usage.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),usageTime);
                         editor.putString("usage",gson.toJson(usage));
-                        Log.i("DevApps","usage="+usage);
-                        Log.i("DevApps","usage1="+sharedPreferences.getString("usage",""));
+
 
                     editor.apply();
                     if(screenStartTime != null && screenStartTime.second != null) {
