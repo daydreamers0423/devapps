@@ -381,8 +381,10 @@ public class DAnalyticsHelper extends Application  {
 
             @Override
             public void onActivityPaused(@NonNull Activity activity) {
+                Log.i("DevApps","in paused..");
                 SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
                 if (!ACTIVITY_EVENT_PAUSED && !sharedPreferences.getString("referer","test@t.com").isEmpty()) {
+                    Log.i("DevApps","in paused..& in if");
                     ACTIVITY_EVENT_PAUSED = Boolean.TRUE;
                     ACTIVITY_EVENT_RESUMED = Boolean.FALSE;
 
@@ -396,7 +398,7 @@ public class DAnalyticsHelper extends Application  {
                     Calendar calendar = getCurrentDate();
                     Map<String,Object> usage = Objects.requireNonNullElse(gson.fromJson(sharedPreferences.getString("usage",""),HashMap.class),new HashMap<String,Long>());
                     DecimalFormat mFormat= new DecimalFormat("00");
-                    Double dayUsage = (Double)Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0L) / 1000;
+                    Long dayUsage = (long) Math.round((Long)Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0L) / 1000L);
                         Log.i("DevApps",dayUsage.toString());
                         usageTime = (long) (dayUsage + usageTime);
 
