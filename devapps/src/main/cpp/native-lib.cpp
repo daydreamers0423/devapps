@@ -4,7 +4,7 @@ extern "C"
 JNIEXPORT jstring  JNICALL
 Java_in_daydreamers_devapps_DAnalyticsHelper_getDeeplink(JNIEnv *env, jobject thiz) {
     // Return the service URL
-    return env->NewStringUTF("https://shooliniquiz.web.app");
+    return env->NewStringUTF("https://app.appsmith.com/app/devapps/appdownload-684ac2e4a12b7d11fcfec66f");
 }
 extern "C"
 JNIEXPORT jstring  JNICALL
