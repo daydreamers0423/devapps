@@ -112,7 +112,7 @@ public class DAnalyticsHelper extends Application  {
                         Log.i("token=",response.token());
                         Gson gson = new Gson();
                         try {
-                            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token());
+                            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
                         } catch (IOException e) {
 
                         }
@@ -143,7 +143,7 @@ public class DAnalyticsHelper extends Application  {
         return instance;
     }
 
-    public static void callCloudFunction(@NonNull Map data, @NonNull  Long usage , @NonNull String url, String refId, String token) throws IOException {
+    public static void callCloudFunction(@NonNull Map data, @NonNull  Long usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
         data.put("usage",usage/1000);
@@ -160,6 +160,7 @@ public class DAnalyticsHelper extends Application  {
         HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(url), content);
         HttpHeaders headers = request.getHeaders();
         headers.put("token",token);
+        headers.put("nounce",nonce);
         // Execute the request
         HttpResponse response = request.execute();
 
