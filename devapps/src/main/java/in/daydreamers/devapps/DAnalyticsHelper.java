@@ -20,7 +20,14 @@ import androidx.work.WorkManager;
 import com.android.installreferrer.api.InstallReferrerClient;
 import com.android.installreferrer.api.InstallReferrerStateListener;
 import com.android.installreferrer.api.ReferrerDetails;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.play.core.integrity.IntegrityManager;
+import com.google.android.play.core.integrity.IntegrityManagerFactory;
+import com.google.android.play.core.integrity.IntegrityTokenRequest;
+import com.google.android.play.core.integrity.IntegrityTokenResponse;
 import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
@@ -47,6 +54,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -74,6 +82,7 @@ public class DAnalyticsHelper extends Application  {
     private static Application application;
 
 
+
     static Pair<String,Long> screenStartTime;
 
     static {
@@ -85,6 +94,37 @@ public class DAnalyticsHelper extends Application  {
     // Private constructor to prevent direct instantiation
     public DAnalyticsHelper() {
 
+    }
+
+    public void requestPlayIntegrityToken(Context context,final SharedPreferences prefs) {
+        final String nonce = UUID.randomUUID().toString();
+
+        IntegrityManager integrityManager = IntegrityManagerFactory.create(context);
+
+        IntegrityTokenRequest request = IntegrityTokenRequest.builder()
+                .setNonce(nonce)
+                .build();
+
+        integrityManager.requestIntegrityToken(request)
+                .addOnSuccessListener(new OnSuccessListener<IntegrityTokenResponse>() {
+                    @Override
+                    public void onSuccess(IntegrityTokenResponse response) {
+
+                        Gson gson = new Gson();
+                        try {
+                            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token());
+                        } catch (IOException e) {
+
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+
+
+                    }
+                });
     }
     // Thread-safe method to get the singleton instance
     public static DAnalyticsHelper getInstance(@NonNull String userId,@NonNull String appId,@NonNull Application application) {
@@ -103,11 +143,12 @@ public class DAnalyticsHelper extends Application  {
         return instance;
     }
 
-    public static void callCloudFunction(@NonNull Map data,@NonNull  Long usage ,@NonNull String url,String refId) throws IOException {
+    public static void callCloudFunction(@NonNull Map data, @NonNull  Long usage , @NonNull String url, String refId, String token) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
         data.put("usage",usage/1000);
         data.put("refId",refId);
+
         // Create a request factory
         HttpRequestFactory requestFactory = transport.createRequestFactory();
 
@@ -117,7 +158,8 @@ public class DAnalyticsHelper extends Application  {
 
         // Create the POST request
         HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(url), content);
-
+        HttpHeaders headers = request.getHeaders();
+        headers.put("token",token);
         // Execute the request
         HttpResponse response = request.execute();
 
@@ -309,7 +351,7 @@ public class DAnalyticsHelper extends Application  {
 
         }
         Log.i("DevApps","application="+ String.valueOf(application));
-        registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
 
             @Override
             public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
@@ -341,19 +383,19 @@ public class DAnalyticsHelper extends Application  {
                 }
                 if(!prefs.getBoolean("lastupdated",true) && !prefs.getString("referer","").isEmpty())
                 {
-                    Gson gson = new Gson();
+
                     try {
                         executorService.execute(()-> {
                             try {
-
-                                callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""));
-                            } catch (IOException e) {
+                                requestPlayIntegrityToken(activity.getApplicationContext(),prefs);
+                                prefs.edit().putBoolean("lastupdated",true).apply();
+                                prefs.edit().putBoolean("dirty",false).apply();
+                            } catch (Exception e) {
                                 Log.e("Error",e.toString());
                             }
                         });
 
-                        prefs.edit().putBoolean("lastupdated",true).apply();
-                        prefs.edit().putBoolean("dirty",false).apply();
+
 
                     } catch (Exception e) {
                         Log.e("Error",e.toString());

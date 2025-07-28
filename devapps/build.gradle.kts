@@ -13,7 +13,7 @@ if (localPropertiesFile.exists()) {
 
 android {
     namespace = "in.daydreamers.devapps"
-    compileSdk = 34
+    compileSdk = 35
     buildFeatures {
         buildConfig = true
     }
@@ -34,7 +34,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+
             multiDexEnabled = true
 
 
@@ -82,5 +83,6 @@ dependencies {
    implementation(libs.google.http.client.gson)// Optional for JSON parsing
     implementation("androidx.work:work-runtime:2.9.1")
     implementation("com.android.installreferrer:installreferrer:2.2")
+    implementation("com.google.android.play:integrity:1.4.0")
 
 }
