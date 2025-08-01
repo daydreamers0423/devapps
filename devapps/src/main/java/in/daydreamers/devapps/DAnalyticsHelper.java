@@ -111,6 +111,7 @@ public class DAnalyticsHelper extends Application  {
                     @Override
                     public void onSuccess(IntegrityTokenResponse response) {
                         Log.i("DevApps::","token="+response.token());
+                        Log.i("DevApps::","nonce="+nonce);
                         Gson gson = new Gson();
                         try {
                             callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
