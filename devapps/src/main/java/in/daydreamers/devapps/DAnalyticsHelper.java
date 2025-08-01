@@ -383,6 +383,7 @@ public class DAnalyticsHelper extends Application  {
                     schedulePeriodicTask();
                     markPeriodicTaskScheduled();
                 }
+                requestPlayIntegrityToken(activity.getApplicationContext(),prefs);
                 if(!prefs.getBoolean("lastupdated",true) )//&& !prefs.getString("referer","").isEmpty()
                 {
 
