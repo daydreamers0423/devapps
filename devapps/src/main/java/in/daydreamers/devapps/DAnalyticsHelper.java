@@ -97,6 +97,7 @@ public class DAnalyticsHelper extends Application  {
     }
 
     public void requestPlayIntegrityToken(Context context,final SharedPreferences prefs) {
+        Log.i("DevApps::","requestPlayIntegrityToken");
         final String nonce = UUID.randomUUID().toString();
 
         IntegrityManager integrityManager = IntegrityManagerFactory.create(context);
@@ -109,12 +110,12 @@ public class DAnalyticsHelper extends Application  {
                 .addOnSuccessListener(new OnSuccessListener<IntegrityTokenResponse>() {
                     @Override
                     public void onSuccess(IntegrityTokenResponse response) {
-                        Log.i("token=",response.token());
+                        Log.i("DevApps::","token="+response.token());
                         Gson gson = new Gson();
                         try {
                             callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
                         } catch (IOException e) {
-
+                            Log.e("Error2222",e.toString());
                         }
                     }
                 })
