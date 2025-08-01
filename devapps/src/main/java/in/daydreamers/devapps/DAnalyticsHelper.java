@@ -371,9 +371,12 @@ public class DAnalyticsHelper extends Application  {
                             Log.i("DevApps", "ID==" + itemId);
                             SharedPreferences sharedPreferences = activity.getSharedPreferences(getScreenAnalytics(), MODE_PRIVATE);
                             SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putString("referer", itemId);
-                            editor.putBoolean("dirty", true);
-                            editor.apply();
+                            if(sharedPreferences.getString("referer","").isEmpty()) {
+                                editor.putString("referer", itemId);
+                                editor.putBoolean("dirty", true);
+
+                                editor.apply();
+                            }
                             isDeepLinkHandled = Boolean.TRUE;
                         }
                     }
@@ -384,13 +387,14 @@ public class DAnalyticsHelper extends Application  {
                     schedulePeriodicTask();
                     markPeriodicTaskScheduled();
                 }
-                requestPlayIntegrityToken(activity.getApplicationContext(),prefs);
-                if(!prefs.getBoolean("lastupdated",true) )//&& !prefs.getString("referer","").isEmpty()
-                {
+
+               if(!prefs.getBoolean("lastupdated",true) && !prefs.getString("referer","").isEmpty())//
+               {
 
                     try {
                         executorService.execute(()-> {
                             try {
+                                Log.i("DevApps","requestPlayIntegrityToken");
                                 requestPlayIntegrityToken(activity.getApplicationContext(),prefs);
                                 prefs.edit().putBoolean("lastupdated",true).apply();
                                 prefs.edit().putBoolean("dirty",false).apply();
