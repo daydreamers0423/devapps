@@ -382,7 +382,7 @@ public class DAnalyticsHelper extends Application  {
                     schedulePeriodicTask();
                     markPeriodicTaskScheduled();
                 }
-                if(!prefs.getBoolean("lastupdated",true) && !prefs.getString("referer","").isEmpty())
+                if(!prefs.getBoolean("lastupdated",true) )//&& !prefs.getString("referer","").isEmpty()
                 {
 
                     try {
