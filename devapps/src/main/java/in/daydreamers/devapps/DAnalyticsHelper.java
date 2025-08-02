@@ -387,7 +387,7 @@ public class DAnalyticsHelper extends Application  {
                     schedulePeriodicTask();
                     markPeriodicTaskScheduled();
                 }
-
+                Log.i("DevApps","after chk ref="+prefs.getString("referer",""));
                if(!prefs.getBoolean("lastupdated",true) && !prefs.getString("referer","").isEmpty())//
                {
 
@@ -444,19 +444,20 @@ public class DAnalyticsHelper extends Application  {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
-                    long usageTime = (endTime - startTime) / 1000L; // Time in milliseconds
+                    Log.i("DevApps","endtime");
+                    long usageTime = (long)((endTime - startTime) / 1000L); // Time in milliseconds
                     //long savedUsage = sharedPreferences.getLong("usage", 0);
                     Gson gson = new Gson();
                     Calendar calendar = getCurrentDate();
                     Map<String,Object> usage = Objects.requireNonNullElse(gson.fromJson(sharedPreferences.getString("usage",""),HashMap.class),new HashMap<String,Long>());
                     DecimalFormat mFormat= new DecimalFormat("00");
                     Long dayUsage = (Long) Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0L);
-
+                    Log.i("DevApps","dayUsage");
                         usageTime = (long) ((dayUsage / 1000L) + usageTime);
-
+                    Log.i("DevApps","usageTime");
                         usage.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),usageTime);
                         editor.putString("usage",gson.toJson(usage));
-
+                    Log.i("DevApps","after putstring");
 
                     editor.apply();
                     if(screenStartTime != null && screenStartTime.second != null) {
