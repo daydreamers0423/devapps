@@ -445,7 +445,7 @@ public class DAnalyticsHelper extends Application  {
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
                     Log.i("DevApps","endtime");
-                    long usageTime = (long)((endTime - startTime) / 1000L); // Time in milliseconds
+                    long usageTime = Math.round((endTime - startTime) / 1000L); // Time in milliseconds
                     //long savedUsage = sharedPreferences.getLong("usage", 0);
                     Gson gson = new Gson();
                     Calendar calendar = getCurrentDate();
@@ -453,7 +453,7 @@ public class DAnalyticsHelper extends Application  {
                     DecimalFormat mFormat= new DecimalFormat("00");
                     Long dayUsage = (Long) Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0L);
                     Log.i("DevApps","dayUsage");
-                        usageTime = (long) ((dayUsage / 1000L) + usageTime);
+                        usageTime = Math.round((dayUsage / 1000L) + usageTime);
                     Log.i("DevApps","usageTime");
                         usage.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),usageTime);
                         editor.putString("usage",gson.toJson(usage));
