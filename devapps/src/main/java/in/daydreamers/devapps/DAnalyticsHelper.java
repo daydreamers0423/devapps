@@ -114,20 +114,24 @@ public class DAnalyticsHelper extends Application  {
                         Log.i("DevApps::","nonce="+nonce);
                         Gson gson = new Gson();
                         HashMap<String,Object> usage = gson.fromJson(prefs.getString("usage","{}"),HashMap.class);
-                        long totalUsage = 0;
+                        Long[] totalUsage = new Long[1];
+                        totalUsage[0]=0L;
                         if(!usage.isEmpty())
                         {
                             for(Object val :usage.values())
                             {
-                                totalUsage += ((Number)val).longValue();
+                                totalUsage[0] += ((Number)val).longValue();
                             }
 
                         }
-                        try {
-                            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), totalUsage, getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
-                        } catch (IOException e) {
-                            Log.e("Error2222",e.toString());
-                        }
+                        executorService.execute(()-> {
+                            try {
+                                Log.i("DevApps","Main requestPlayIntegrityToken:executorService");
+                                callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), totalUsage[0], getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
+                            } catch (Exception e) {
+                                Log.e("Error",e.toString());
+                            }
+                        });
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -155,7 +159,7 @@ public class DAnalyticsHelper extends Application  {
         return instance;
     }
 
-    public static void callCloudFunction(@NonNull Map data, @NonNull  Long usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
+    public  void callCloudFunction(@NonNull Map data, @NonNull  Long usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
         data.put("usage",usage/1000);
@@ -175,12 +179,17 @@ public class DAnalyticsHelper extends Application  {
         headers.put("nounce",nonce);
         // Execute the request
         HttpResponse response = request.execute();
-
+        SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(getScreenAnalytics(), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
         // Handle the response
         if (response.isSuccessStatusCode()) {
+            editor.putBoolean("lastupdated",true).apply();
+            editor.putBoolean("dirty",false).apply();
             String responseBody = response.parseAsString();
             System.out.println("Response: " + responseBody);
         } else {
+            editor.putBoolean("lastupdated", false);
+            editor.apply();
             System.err.println();
         }
     }
@@ -406,8 +415,7 @@ public class DAnalyticsHelper extends Application  {
                             try {
                                 Log.i("DevApps","requestPlayIntegrityToken");
                                 requestPlayIntegrityToken(activity.getApplicationContext(),prefs);
-                                prefs.edit().putBoolean("lastupdated",true).apply();
-                                prefs.edit().putBoolean("dirty",false).apply();
+
                             } catch (Exception e) {
                                 Log.e("Error",e.toString());
                             }

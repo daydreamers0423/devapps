@@ -32,11 +32,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class UpdateWorker  extends Worker {
 
     private static final String SCREEN_ANALYTICS = "SCREEN_ANALYTICS_DEVAPPS";
     private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "/loganalytics";
+
+    private ExecutorService executorService;
 
     public native String getServiceUrl();
 
@@ -52,21 +56,18 @@ public class UpdateWorker  extends Worker {
     public Result doWork() {
         SharedPreferences prefs = context.getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
         Gson gson = new Gson();
-        SharedPreferences.Editor es = prefs.edit();
+
         if(prefs.getBoolean("dirty",false)) {
             try {
                 requestPlayIntegrityToken(context,prefs);
                 //callCloudFunction(gson.fromJson(prefs.getString("timeline", ""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS, prefs.getString("referer", ""));
 
             } catch (Exception e) {
-                es.putBoolean("lastupdated", false);
-                es.apply();
+
                 return Result.failure();
             }
 
-            es.putBoolean("lastupdated", true);
-            prefs.edit().putBoolean("dirty",false).apply();
-            es.apply();
+
             return Result.success();
         }
 
@@ -76,7 +77,7 @@ public class UpdateWorker  extends Worker {
     public void requestPlayIntegrityToken(Context context,final SharedPreferences prefs) {
         Log.i("DevApps::","requestPlayIntegrityToken");
         final String nonce = UUID.randomUUID().toString();
-
+        executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
         IntegrityManager integrityManager = IntegrityManagerFactory.create(context);
 
         IntegrityTokenRequest request = IntegrityTokenRequest.builder()
@@ -93,17 +94,26 @@ public class UpdateWorker  extends Worker {
                         Gson gson = new Gson();
                         try {
                             HashMap<String,Object> usage = gson.fromJson(prefs.getString("usage","{}"),HashMap.class);
-                            long totalUsage = 0;
+                            Long[] totalUsage = new Long[1];
+                            totalUsage[0]= 0L;
                             if(!usage.isEmpty())
                             {
                                 for(Object val :usage.values())
                                 {
-                                    totalUsage += ((Number)val).longValue();
+                                    totalUsage[0] += ((Number)val).longValue();
                                 }
 
                             }
-                            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), totalUsage, getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
-                        } catch (IOException e) {
+                            executorService.execute(()-> {
+                                try {
+                                    Log.i("DevApps","requestPlayIntegrityToken:executorService");
+                                    callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), totalUsage[0], getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
+                                } catch (Exception e) {
+                                    Log.e("Error",e.toString());
+                                }
+                            });
+
+                        } catch (Exception e) {
                             Log.e("Error3333",e.toString());
                         }
                     }
@@ -117,7 +127,7 @@ public class UpdateWorker  extends Worker {
                 });
     }
 
-    public static void callCloudFunction(@NonNull Map data, @NonNull  Long usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
+    public  void callCloudFunction(@NonNull Map data, @NonNull  Long usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
         data.put("usage",usage/1000);
@@ -136,12 +146,18 @@ public class UpdateWorker  extends Worker {
         headers.put("nounce",nonce);
         // Execute the request
         HttpResponse response = request.execute();
-
+        SharedPreferences prefs = context.getSharedPreferences(SCREEN_ANALYTICS, Context.MODE_PRIVATE);
+        SharedPreferences.Editor es = prefs.edit();
         // Handle the response
         if (response.isSuccessStatusCode()) {
+            es.putBoolean("lastupdated", true);
+            prefs.edit().putBoolean("dirty",false).apply();
+            es.apply();
             String responseBody = response.parseAsString();
             System.out.println("Response: " + responseBody);
         } else {
+            es.putBoolean("lastupdated", false);
+            es.apply();
             System.err.println();
         }
     }
