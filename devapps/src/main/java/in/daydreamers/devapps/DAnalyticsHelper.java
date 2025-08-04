@@ -444,9 +444,11 @@ public class DAnalyticsHelper extends Application  {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
-                    Log.i("DevApps","endtime="+(endTime - startTime) / 1000L);
-                    long usageTime = Math.round((float) (endTime - startTime) / 1000L); // Time in milliseconds
+                    Log.i("DevApps","endtime="+endTime+"startTime="+ startTime);
+
+                    long usageTime = (endTime - startTime) / 1000L; // Time in milliseconds
                     //long savedUsage = sharedPreferences.getLong("usage", 0);
+                    Log.i("DevApps","endtime="+(endTime - startTime) / 1000L);
                     Gson gson = new Gson();
                     Calendar calendar = getCurrentDate();
                     Map<String,Object> usage = Objects.requireNonNullElse(gson.fromJson(sharedPreferences.getString("usage",""),HashMap.class),new HashMap<String,Long>());
