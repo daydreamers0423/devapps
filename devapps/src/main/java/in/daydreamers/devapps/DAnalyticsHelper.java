@@ -444,8 +444,8 @@ public class DAnalyticsHelper extends Application  {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
                     // App goes to background
                     long endTime = SystemClock.elapsedRealtime();
-                    Log.i("DevApps","endtime");
-                    long usageTime = Math.round((endTime - startTime) / 1000L); // Time in milliseconds
+                    Log.i("DevApps","endtime="+(endTime - startTime) / 1000L);
+                    long usageTime = Math.round((float) (endTime - startTime) / 1000L); // Time in milliseconds
                     //long savedUsage = sharedPreferences.getLong("usage", 0);
                     Gson gson = new Gson();
                     Calendar calendar = getCurrentDate();
