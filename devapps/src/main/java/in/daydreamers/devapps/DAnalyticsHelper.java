@@ -450,10 +450,11 @@ public class DAnalyticsHelper extends Application  {
                     Gson gson = new Gson();
                     Calendar calendar = getCurrentDate();
                     Map<String,Object> usage = Objects.requireNonNullElse(gson.fromJson(sharedPreferences.getString("usage",""),HashMap.class),new HashMap<String,Long>());
+                    Log.i("DevApps","usage="+usage);
                     DecimalFormat mFormat= new DecimalFormat("00");
                     Long dayUsage = (Long) Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0L);
-                    Log.i("DevApps","dayUsage");
-                        usageTime = Math.round((dayUsage / 1000L) + usageTime);
+                    Log.i("DevApps","dayUsage="+dayUsage);
+                        usageTime = Math.round(((float) dayUsage / 1000L) + usageTime);
                     Log.i("DevApps","usageTime");
                         usage.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),usageTime);
                         editor.putString("usage",gson.toJson(usage));
