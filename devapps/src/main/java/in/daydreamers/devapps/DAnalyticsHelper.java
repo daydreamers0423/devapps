@@ -113,8 +113,18 @@ public class DAnalyticsHelper extends Application  {
                         Log.i("DevApps::","token="+response.token());
                         Log.i("DevApps::","nonce="+nonce);
                         Gson gson = new Gson();
+                        HashMap<String,Object> usage = gson.fromJson(prefs.getString("usage","{}"),HashMap.class);
+                        long totalUsage = 0;
+                        if(!usage.isEmpty())
+                        {
+                            for(Object val :usage.values())
+                            {
+                                totalUsage += ((Number)val).longValue();
+                            }
+
+                        }
                         try {
-                            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), Objects.requireNonNull(prefs.getLong("usage", 0L)), getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
+                            callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), totalUsage, getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
                         } catch (IOException e) {
                             Log.e("Error2222",e.toString());
                         }
