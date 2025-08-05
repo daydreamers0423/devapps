@@ -24,6 +24,7 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
+import com.google.api.client.json.GenericJson;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.gson.Gson;
 
@@ -73,13 +74,34 @@ public class UpdateWorker  extends Worker {
 
         return Result.success();
     }
+    private String getNonce() {
 
+
+        HttpTransport transport = new NetHttpTransport();
+
+
+        // Create a request factory
+        HttpRequestFactory requestFactory = transport.createRequestFactory();
+
+        // Create the POST request
+        HttpRequest request = null;
+        try {
+            request = requestFactory.buildGetRequest(new GenericUrl(getServiceUrl() +"/getNonce"));
+
+            // Execute the request
+            HttpResponse response = request.execute();
+            return (String) response.parseAs(GenericJson.class).get("nonce");
+        } catch (IOException e) {
+            Log.e("Devapps Error",e.toString());
+        }
+        return "";
+    }
     public void requestPlayIntegrityToken(Context context,final SharedPreferences prefs) {
         Log.i("DevApps::","requestPlayIntegrityToken");
-        final String nonce = UUID.randomUUID().toString();
+
         executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
         IntegrityManager integrityManager = IntegrityManagerFactory.create(context);
-
+        String nonce = getNonce();
         IntegrityTokenRequest request = IntegrityTokenRequest.builder()
                 .setNonce(nonce)
                 .build();

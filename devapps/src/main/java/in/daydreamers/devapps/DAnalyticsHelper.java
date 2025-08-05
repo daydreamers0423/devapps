@@ -34,6 +34,8 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
+import com.google.api.client.json.GenericJson;
+import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 
 import com.google.gson.Gson;
@@ -82,7 +84,6 @@ public class DAnalyticsHelper extends Application  {
     private static Application application;
 
 
-
     static Pair<String,Long> screenStartTime;
 
     static {
@@ -98,10 +99,10 @@ public class DAnalyticsHelper extends Application  {
 
     public void requestPlayIntegrityToken(Context context,final SharedPreferences prefs) {
         Log.i("DevApps::","requestPlayIntegrityToken");
-        final String nonce = UUID.randomUUID().toString();
+
 
         IntegrityManager integrityManager = IntegrityManagerFactory.create(context);
-
+        String nonce = getNonce();
         IntegrityTokenRequest request = IntegrityTokenRequest.builder()
                 .setNonce(nonce)
                 .build();
@@ -142,6 +143,30 @@ public class DAnalyticsHelper extends Application  {
                     }
                 });
     }
+
+    private String getNonce() {
+
+
+        HttpTransport transport = new NetHttpTransport();
+
+
+        // Create a request factory
+        HttpRequestFactory requestFactory = transport.createRequestFactory();
+
+        // Create the POST request
+        HttpRequest request = null;
+        try {
+            request = requestFactory.buildGetRequest(new GenericUrl(getServiceUrl() +"/getNonce"));
+
+        // Execute the request
+        HttpResponse response = request.execute();
+        return (String) response.parseAs(GenericJson.class).get("nonce");
+        } catch (IOException e) {
+            Log.e("Devapps Error",e.toString());
+        }
+        return "";
+    }
+
     // Thread-safe method to get the singleton instance
     public static DAnalyticsHelper getInstance(@NonNull String userId,@NonNull String appId,@NonNull Application application) {
         if (instance == null) {
