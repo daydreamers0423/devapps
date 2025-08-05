@@ -90,7 +90,7 @@ public class UpdateWorker  extends Worker {
 
             // Execute the request
             HttpResponse response = request.execute();
-            Log.i("DevApps","nonce="+response.parseAs(GenericJson.class));
+            Log.i("DevApps","nonce="+response.parseAsString());
             return (String) response.parseAs(GenericJson.class).get("nonce");
         } catch (IOException e) {
             Log.e("Devapps Error",e.toString());
