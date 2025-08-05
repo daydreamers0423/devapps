@@ -90,7 +90,7 @@ public class UpdateWorker  extends Worker {
 
             // Execute the request
             HttpResponse response = request.execute();
-            Log.i("DevApps","nonce="+response.parseAsString());
+            Log.i("DevApps","after getnounce");
             return (String) response.parseAs(GenericJson.class).get("nonce");
         } catch (IOException e) {
             Log.e("Devapps Error",e.toString());
@@ -147,9 +147,9 @@ public class UpdateWorker  extends Worker {
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
-                    public void onFailure(Exception e) {
-
-
+                    public void onFailure( Exception e) {
+                        Log.e("DevApps","integrity failed");
+                        Log.e("Error444",e.toString());
                     }
                 });
     }
