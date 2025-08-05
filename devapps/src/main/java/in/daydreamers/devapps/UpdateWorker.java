@@ -90,9 +90,13 @@ public class UpdateWorker  extends Worker {
 
             // Execute the request
             HttpResponse response = request.execute();
+            Log.i("DevApps","nonce="+response.parseAs(GenericJson.class));
             return (String) response.parseAs(GenericJson.class).get("nonce");
         } catch (IOException e) {
             Log.e("Devapps Error",e.toString());
+        }catch (Exception ex)
+        {
+            Log.e("Devapps Error",ex.toString());
         }
         return "";
     }
@@ -102,6 +106,7 @@ public class UpdateWorker  extends Worker {
         executorService =  executorService == null ? Executors.newSingleThreadExecutor():executorService;
         IntegrityManager integrityManager = IntegrityManagerFactory.create(context);
         String nonce = getNonce();
+        Log.i("DevApps::","nonce="+nonce);
         IntegrityTokenRequest request = IntegrityTokenRequest.builder()
                 .setNonce(nonce)
                 .build();
