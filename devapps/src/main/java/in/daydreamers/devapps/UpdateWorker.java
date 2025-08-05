@@ -94,20 +94,20 @@ public class UpdateWorker  extends Worker {
                         Gson gson = new Gson();
                         try {
                             HashMap<String,Object> usage = gson.fromJson(prefs.getString("usage","{}"),HashMap.class);
-                            Long[] totalUsage = new Long[1];
-                            totalUsage[0]= 0L;
-                            if(!usage.isEmpty())
-                            {
-                                for(Object val :usage.values())
-                                {
-                                    totalUsage[0] += ((Number)val).longValue();
-                                }
-
-                            }
+//                            Long[] totalUsage = new Long[1];
+//                            totalUsage[0]= 0L;
+//                            if(!usage.isEmpty())
+//                            {
+//                                for(Object val :usage.values())
+//                                {
+//                                    totalUsage[0] += ((Number)val).longValue();
+//                                }
+//
+//                            }
                             executorService.execute(()-> {
                                 try {
                                     Log.i("DevApps","requestPlayIntegrityToken:executorService");
-                                    callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), totalUsage[0], getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
+                                    callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), usage, getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
                                 } catch (Exception e) {
                                     Log.e("Error",e.toString());
                                 }
@@ -127,10 +127,10 @@ public class UpdateWorker  extends Worker {
                 });
     }
 
-    public  void callCloudFunction(@NonNull Map data, @NonNull  Long usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
+    public  void callCloudFunction(@NonNull Map data, @NonNull  Map usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
-        data.put("usage",usage/1000);
+        data.put("usage",usage);
         data.put("refId",refId);
         // Create a request factory
         HttpRequestFactory requestFactory = transport.createRequestFactory();

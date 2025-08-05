@@ -114,20 +114,20 @@ public class DAnalyticsHelper extends Application  {
                         Log.i("DevApps::","nonce="+nonce);
                         Gson gson = new Gson();
                         HashMap<String,Object> usage = gson.fromJson(prefs.getString("usage","{}"),HashMap.class);
-                        Long[] totalUsage = new Long[1];
-                        totalUsage[0]=0L;
-                        if(!usage.isEmpty())
-                        {
-                            for(Object val :usage.values())
-                            {
-                                totalUsage[0] += ((Number)val).longValue();
-                            }
-
-                        }
+//                        Long[] totalUsage = new Long[1];
+//                        totalUsage[0]=0L;
+//                        if(!usage.isEmpty())
+//                        {
+//                            for(Object val :usage.values())
+//                            {
+//                                totalUsage[0] += ((Number)val).longValue();
+//                            }
+//
+//                        }
                         executorService.execute(()-> {
                             try {
                                 Log.i("DevApps","Main requestPlayIntegrityToken:executorService");
-                                callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), totalUsage[0], getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
+                                callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), usage, getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
                             } catch (Exception e) {
                                 Log.e("Error",e.toString());
                             }
@@ -159,10 +159,10 @@ public class DAnalyticsHelper extends Application  {
         return instance;
     }
 
-    public  void callCloudFunction(@NonNull Map data, @NonNull  Long usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
+    public  void callCloudFunction(@NonNull Map data, @NonNull  Map usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
         // Create an HTTP transport
         HttpTransport transport = new NetHttpTransport();
-        data.put("usage",usage/1000);
+        data.put("usage",usage);
         data.put("refId",refId);
 
         // Create a request factory
@@ -472,9 +472,9 @@ public class DAnalyticsHelper extends Application  {
                     Map<String,Object> usage = Objects.requireNonNullElse(gson.fromJson(sharedPreferences.getString("usage",""),HashMap.class),new HashMap<String,Long>());
                     Log.i("DevApps","usage="+usage);
                     DecimalFormat mFormat= new DecimalFormat("00");
-                    long dayUsage = ((Double) Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0)).longValue();
+                    long dayUsage = ((Number) Objects.requireNonNullElse(usage.get(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format((calendar.get(Calendar.MONTH)+1))+"-"+ calendar.get(Calendar.YEAR)),0.0)).longValue();
                     Log.i("DevApps","dayUsage="+dayUsage);
-                    usageTime = Math.round(((float) dayUsage / 1000L) + usageTime);
+                    usageTime += dayUsage;
                     Log.i("DevApps","usageTime");
                         usage.put(calendar.get(Calendar.DAY_OF_MONTH)+"-"+ mFormat.format(calendar.get(Calendar.MONTH)+1)+"-"+ calendar.get(Calendar.YEAR),usageTime);
                         editor.putString("usage",gson.toJson(usage));
