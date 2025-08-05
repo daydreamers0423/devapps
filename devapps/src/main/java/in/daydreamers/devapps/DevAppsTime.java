@@ -1,4 +1,6 @@
 package in.daydreamers.devapps;
+import android.util.Log;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
@@ -29,13 +31,14 @@ public class DevAppsTime {
 
             // Get the "Date" header from the HTTP response
             String dateHeader = connection.getHeaderField("Date");
-
+            Log.i("DevApps","dateHeader="+dateHeader);
             // Close the connection
             connection.disconnect();
 
             if (dateHeader != null) {
                 // Parse the "Date" header string into a Date object
                 Date date = new Date(dateHeader);
+                Log.i("DevApps","date="+date.getTime());
                 return date.getTime();
             } else {
 
