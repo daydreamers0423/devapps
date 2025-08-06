@@ -94,16 +94,12 @@ public class UpdateWorker  extends Worker {
             String rawJson = response.parseAsString();
             Log.d("DevApps", "Raw JSON: " + rawJson);
 
-// Re-parse using JSON parser
-            GenericJson json = new GsonFactory()
-                    .createJsonParser(rawJson)
-                    .parseAndClose(GenericJson.class);
+
 
 // Check for null before accessing "nonce"
-            if (json != null && json.containsKey("nonce")) {
-                String nonce = (String) json.get("nonce");
-                Log.d("DevApps", "Nonce received: " + nonce);
-                return nonce;
+            if (rawJson != null && !rawJson.isEmpty()) {
+                return rawJson.trim();
+                
             } else {
                 Log.e("DevApps", "JSON is null or does not contain 'nonce'");
                 return "";
