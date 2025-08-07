@@ -45,9 +45,13 @@ public class UpdateWorker  extends Worker {
     public native String getapik();
 
     public native String getprid();
-    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "/loganalytics";
+    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "loganalytics";
 
     private ExecutorService executorService;
+
+    FirebaseAppCheck firebaseAppCheck;
+
+    FirebaseApp firebaseApp;
 
     public native String getServiceUrl();
 
@@ -83,16 +87,22 @@ public class UpdateWorker  extends Worker {
 
     public  void callCloudFunction(@NonNull Map data, @NonNull  Map usage , @NonNull String url, String refId) throws Exception{
         // Create an HTTP transport
+        FirebaseApp app = null;
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setApiKey(getapik())
                 .setApplicationId(getappid())
                 .setProjectId(getprid())
                 .build();
-        FirebaseApp.initializeApp(this.getApplicationContext(), options,"DEVAPPS");
+        try
+        {
+            app = FirebaseApp.getInstance("DEVAPPS");
+        }catch (IllegalStateException  e) {
+            app = FirebaseApp.initializeApp(this.getApplicationContext(), options, "DEVAPPS");
+        }
 
 
-        FirebaseApp app = FirebaseApp.getInstance();
-        FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.getInstance();
+        firebaseAppCheck = FirebaseAppCheck.getInstance();
+
         firebaseAppCheck.installAppCheckProviderFactory(
                 PlayIntegrityAppCheckProviderFactory.getInstance()
         );

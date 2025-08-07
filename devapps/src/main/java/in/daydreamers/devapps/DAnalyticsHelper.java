@@ -81,6 +81,9 @@ public class DAnalyticsHelper extends Application  {
     private static String appId;
     private static Application application;
 
+    FirebaseApp app;
+
+    FirebaseAppCheck firebaseAppCheck;
 
     static Pair<String,Long> screenStartTime;
 
@@ -122,16 +125,19 @@ public class DAnalyticsHelper extends Application  {
 
     public  void callCloudFunction(@NonNull Map data, @NonNull  Map usage , @NonNull String url, String refId) throws Exception{
         // Create an HTTP transport
+
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setApiKey(getapik())
                 .setApplicationId(getappid())
                 .setProjectId(getprid())
                 .build();
-        FirebaseApp.initializeApp(this, options,"DEVAPPS");
-
-
-        FirebaseApp app = FirebaseApp.getInstance();
-        FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.getInstance();
+        try
+        {
+            app = FirebaseApp.getInstance("DEVAPPS");
+        }catch (IllegalStateException  e) {
+            app = FirebaseApp.initializeApp(this.getApplicationContext(), options, "DEVAPPS");
+        }
+        firebaseAppCheck = FirebaseAppCheck.getInstance();
         firebaseAppCheck.installAppCheckProviderFactory(
                 PlayIntegrityAppCheckProviderFactory.getInstance()
         );
