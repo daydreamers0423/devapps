@@ -127,7 +127,7 @@ public class DAnalyticsHelper extends Application  {
                 .setApplicationId(getappid())
                 .setProjectId(getprid())
                 .build();
-        FirebaseApp.initializeApp(this, options);
+        FirebaseApp.initializeApp(this, options,"DEVAPPS");
 
 
         FirebaseApp app = FirebaseApp.getInstance();

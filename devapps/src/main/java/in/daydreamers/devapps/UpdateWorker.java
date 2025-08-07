@@ -88,7 +88,7 @@ public class UpdateWorker  extends Worker {
                 .setApplicationId(getappid())
                 .setProjectId(getprid())
                 .build();
-        FirebaseApp.initializeApp(this.getApplicationContext(), options);
+        FirebaseApp.initializeApp(this.getApplicationContext(), options,"DEVAPPS");
 
 
         FirebaseApp app = FirebaseApp.getInstance();
