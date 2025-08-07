@@ -51,7 +51,7 @@ public class UpdateWorker  extends Worker {
 
     FirebaseAppCheck firebaseAppCheck;
 
-    FirebaseApp firebaseApp;
+    FirebaseApp app;
 
     public native String getServiceUrl();
 
@@ -87,7 +87,6 @@ public class UpdateWorker  extends Worker {
 
     public  void callCloudFunction(@NonNull Map data, @NonNull  Map usage , @NonNull String url, String refId) throws Exception{
         // Create an HTTP transport
-        FirebaseApp app = null;
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setApiKey(getapik())
                 .setApplicationId(getappid())
