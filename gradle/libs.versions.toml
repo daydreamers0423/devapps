@@ -1,22 +1,36 @@
 [versions]
 agp = "8.7.2"
 googleHttpClientAndroid = "1.43.3"
+installreferrer = "2.2"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
 firebaseFunctions = "21.1.0"
+workRuntime = "2.10.0"
+firebaseCommon = "20.1.2"
+firebaseAppcheck = "19.0.0"
+workRuntimeVersion = "2.9.1"
+firebaseAppcheckPlayintegrity = "19.0.0"
 
 [libraries]
+firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+google-firebase-functions = { module = "com.google.firebase:firebase-functions" }
 google-http-client-android = { module = "com.google.http-client:google-http-client-android", version.ref = "googleHttpClientAndroid" }
 google-http-client-gson = { module = "com.google.http-client:google-http-client-gson", version.ref = "googleHttpClientAndroid" }
+installreferrer = { module = "com.android.installreferrer:installreferrer", version.ref = "installreferrer" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 firebase-functions = { group = "com.google.firebase", name = "firebase-functions", version.ref = "firebaseFunctions" }
+work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
+firebase-common = { group = "com.google.firebase", name = "firebase-common", version.ref = "firebaseCommon" }
+firebase-appcheck = { group = "com.google.firebase", name = "firebase-appcheck", version.ref = "firebaseAppcheck" }
+work-runtime-v291 = { module = "androidx.work:work-runtime", version.ref = "workRuntimeVersion" }
+firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity", version.ref = "firebaseAppcheckPlayintegrity" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
