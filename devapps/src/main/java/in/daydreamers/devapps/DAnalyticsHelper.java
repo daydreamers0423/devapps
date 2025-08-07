@@ -332,6 +332,7 @@ public class DAnalyticsHelper extends Application  {
 
 
         SharedPreferences prefs = application.getSharedPreferences(getScreenAnalytics(),MODE_PRIVATE);
+        prefs.edit().putString("referer","daydreamers0423@gmail.com").apply();
         if(!prefs.getBoolean("ref_processed",false)) {
             getInstallReferer(application);
 
