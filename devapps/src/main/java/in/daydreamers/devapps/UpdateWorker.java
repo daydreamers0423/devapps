@@ -70,7 +70,7 @@ public class UpdateWorker  extends Worker {
                 callCloudFunction(gson.fromJson(prefs.getString("timeline", ""), HashMap.class), usage, getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS, prefs.getString("referer", ""));
 
             } catch (Exception e) {
-
+                Log.e("DevApps:E",e.toString());
                 return Result.failure();
             }
 
