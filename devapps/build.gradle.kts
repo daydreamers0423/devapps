@@ -76,13 +76,18 @@ publishing {
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
+    implementation(libs.firebase.common)
+    implementation(libs.firebase.appcheck)
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.functions)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
    implementation(libs.google.http.client.android)
    implementation(libs.google.http.client.gson)// Optional for JSON parsing
-    implementation("androidx.work:work-runtime:2.9.1")
-    implementation("com.android.installreferrer:installreferrer:2.2")
-    implementation("com.google.android.play:integrity:1.4.0")
+    implementation(libs.work.runtime.v291)
+    implementation(libs.installreferrer)
+
+
 
 }

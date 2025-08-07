@@ -20,24 +20,18 @@ import androidx.work.WorkManager;
 import com.android.installreferrer.api.InstallReferrerClient;
 import com.android.installreferrer.api.InstallReferrerStateListener;
 import com.android.installreferrer.api.ReferrerDetails;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.play.core.integrity.IntegrityManager;
-import com.google.android.play.core.integrity.IntegrityManagerFactory;
-import com.google.android.play.core.integrity.IntegrityTokenRequest;
-import com.google.android.play.core.integrity.IntegrityTokenResponse;
+
 import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.http.json.JsonHttpContent;
-import com.google.api.client.json.GenericJson;
-import com.google.api.client.json.JsonFactory;
+
 import com.google.api.client.json.gson.GsonFactory;
 
+import com.google.firebase.FirebaseOptions;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -56,15 +50,19 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
-import java.util.UUID;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.appcheck.FirebaseAppCheck;
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory;
+import com.google.firebase.functions.FirebaseFunctions;
 
 public class DAnalyticsHelper extends Application  {
 
-    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "/loganalytics";
+    private static final String CLOUD_FUNCTION_URL_LOG_ANALYTICS = "loganalytics";
     private static volatile DAnalyticsHelper instance;
 
     private static  Boolean ACTIVITY_EVENT_PAUSED = Boolean.FALSE;
@@ -92,80 +90,18 @@ public class DAnalyticsHelper extends Application  {
 
     public native String getDeeplink();
 
+    public native String getappid();
+    public native String getapik();
+
+    public native String getprid();
+
+
     // Private constructor to prevent direct instantiation
     public DAnalyticsHelper() {
 
     }
 
-    public void requestPlayIntegrityToken(Context context,final SharedPreferences prefs) {
-        Log.i("DevApps::","requestPlayIntegrityToken");
 
-
-        IntegrityManager integrityManager = IntegrityManagerFactory.create(context);
-        String nonce = getNonce();
-        IntegrityTokenRequest request = IntegrityTokenRequest.builder()
-                .setNonce(nonce)
-                .build();
-
-        integrityManager.requestIntegrityToken(request)
-                .addOnSuccessListener(new OnSuccessListener<IntegrityTokenResponse>() {
-                    @Override
-                    public void onSuccess(IntegrityTokenResponse response) {
-                        Log.i("DevApps::","token="+response.token());
-                        Log.i("DevApps::","nonce="+nonce);
-                        Gson gson = new Gson();
-                        HashMap<String,Object> usage = gson.fromJson(prefs.getString("usage","{}"),HashMap.class);
-//                        Long[] totalUsage = new Long[1];
-//                        totalUsage[0]=0L;
-//                        if(!usage.isEmpty())
-//                        {
-//                            for(Object val :usage.values())
-//                            {
-//                                totalUsage[0] += ((Number)val).longValue();
-//                            }
-//
-//                        }
-                        executorService.execute(()-> {
-                            try {
-                                Log.i("DevApps","Main requestPlayIntegrityToken:executorService");
-                                callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), usage, getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""),response.token(),nonce);
-                            } catch (Exception e) {
-                                Log.e("Error",e.toString());
-                            }
-                        });
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(Exception e) {
-
-
-                    }
-                });
-    }
-
-    private String getNonce() {
-
-
-        HttpTransport transport = new NetHttpTransport();
-
-
-        // Create a request factory
-        HttpRequestFactory requestFactory = transport.createRequestFactory();
-
-        // Create the POST request
-        HttpRequest request = null;
-        try {
-            request = requestFactory.buildGetRequest(new GenericUrl(getServiceUrl() +"/getNonce"));
-
-        // Execute the request
-        HttpResponse response = request.execute();
-        return (String) response.parseAs(GenericJson.class).get("nonce");
-        } catch (IOException e) {
-            Log.e("Devapps Error",e.toString());
-        }
-        return "";
-    }
 
     // Thread-safe method to get the singleton instance
     public static DAnalyticsHelper getInstance(@NonNull String userId,@NonNull String appId,@NonNull Application application) {
@@ -184,39 +120,42 @@ public class DAnalyticsHelper extends Application  {
         return instance;
     }
 
-    public  void callCloudFunction(@NonNull Map data, @NonNull  Map usage , @NonNull String url, String refId, String token, String nonce) throws IOException {
+    public  void callCloudFunction(@NonNull Map data, @NonNull  Map usage , @NonNull String url, String refId) throws Exception{
         // Create an HTTP transport
-        HttpTransport transport = new NetHttpTransport();
+        FirebaseOptions options = new FirebaseOptions.Builder()
+                .setApiKey(getapik())
+                .setApplicationId(getappid())
+                .setProjectId(getprid())
+                .build();
+        FirebaseApp.initializeApp(this, options);
+
+
+        FirebaseApp app = FirebaseApp.getInstance();
+        FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.getInstance();
+        firebaseAppCheck.installAppCheckProviderFactory(
+                PlayIntegrityAppCheckProviderFactory.getInstance()
+        );
+        Log.i("DevApps", "Firebase initialized: " + app.getName());
         data.put("usage",usage);
         data.put("refId",refId);
 
-        // Create a request factory
-        HttpRequestFactory requestFactory = transport.createRequestFactory();
-
-        // Prepare the JSON payload
-        JsonHttpContent content = new JsonHttpContent(new GsonFactory(),
-                data);
-
-        // Create the POST request
-        HttpRequest request = requestFactory.buildPostRequest(new GenericUrl(url), content);
-        HttpHeaders headers = request.getHeaders();
-        headers.put("token",token);
-        headers.put("nounce",nonce);
-        // Execute the request
-        HttpResponse response = request.execute();
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(getScreenAnalytics(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        // Handle the response
-        if (response.isSuccessStatusCode()) {
-            editor.putBoolean("lastupdated",true).apply();
-            editor.putBoolean("dirty",false).apply();
-            String responseBody = response.parseAsString();
-            System.out.println("Response: " + responseBody);
-        } else {
-            editor.putBoolean("lastupdated", false);
-            editor.apply();
-            System.err.println();
-        }
+        FirebaseFunctions.getInstance()
+                .getHttpsCallable(CLOUD_FUNCTION_URL_LOG_ANALYTICS)
+                .call(data)
+                .addOnSuccessListener(result -> {
+                    // Success
+                    Log.i("Devapps","loganalytics success");
+                    editor.putBoolean("lastupdated",true).apply();
+                    editor.putBoolean("dirty",false).apply();
+                }).addOnFailureListener(error->{
+                    Log.e("Devapps:",error.toString());
+                    editor.putBoolean("lastupdated", false);
+                    editor.apply();
+                });
+
+
     }
     // Helper class to create JSON payload
     public static String getSHA256Fingerprint(Context context) {
@@ -436,10 +375,13 @@ public class DAnalyticsHelper extends Application  {
                {
 
                     try {
+                        Gson gson = new Gson();
+                        HashMap<String,Object> usage = gson.fromJson(prefs.getString("usage","{}"),HashMap.class);
+
                         executorService.execute(()-> {
                             try {
                                 Log.i("DevApps","requestPlayIntegrityToken");
-                                requestPlayIntegrityToken(activity.getApplicationContext(),prefs);
+                                callCloudFunction(gson.fromJson(prefs.getString("timeline",""), HashMap.class), usage, getServiceUrl() + CLOUD_FUNCTION_URL_LOG_ANALYTICS,prefs.getString("referer",""));
 
                             } catch (Exception e) {
                                 Log.e("Error",e.toString());
