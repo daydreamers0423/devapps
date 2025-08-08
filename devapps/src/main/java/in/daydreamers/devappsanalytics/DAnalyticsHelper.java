@@ -1,4 +1,4 @@
-package in.daydreamers.devapps;
+package in.daydreamers.devappsanalytics;
 
 import android.app.Activity;
 import android.app.Application;
@@ -21,20 +21,9 @@ import com.android.installreferrer.api.InstallReferrerClient;
 import com.android.installreferrer.api.InstallReferrerStateListener;
 import com.android.installreferrer.api.ReferrerDetails;
 
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.http.json.JsonHttpContent;
-
-import com.google.api.client.json.gson.GsonFactory;
-
 import com.google.firebase.FirebaseOptions;
 import com.google.gson.Gson;
 
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.HashMap;

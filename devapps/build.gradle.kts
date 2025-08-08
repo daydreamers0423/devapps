@@ -12,7 +12,7 @@ if (localPropertiesFile.exists()) {
 }
 
 android {
-    namespace = "in.daydreamers.devapps"
+    namespace = "in.daydreamers.devappsanalytics"
     compileSdk = 35
     buildFeatures {
         buildConfig = true

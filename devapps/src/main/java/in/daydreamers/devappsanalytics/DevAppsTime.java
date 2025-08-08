@@ -1,10 +1,7 @@
-package in.daydreamers.devapps;
+package in.daydreamers.devappsanalytics;
 import android.util.Log;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
 import java.util.Date;
 
