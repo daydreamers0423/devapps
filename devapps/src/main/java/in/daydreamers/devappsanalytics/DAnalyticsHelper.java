@@ -126,7 +126,7 @@ public class DAnalyticsHelper extends Application  {
         }catch (IllegalStateException  e) {
             app = FirebaseApp.initializeApp(this.getApplicationContext(), options, "DEVAPPS");
         }
-        firebaseAppCheck = FirebaseAppCheck.getInstance(app);
+        firebaseAppCheck = FirebaseAppCheck.getInstance();
         firebaseAppCheck.installAppCheckProviderFactory(
                 PlayIntegrityAppCheckProviderFactory.getInstance()
         );

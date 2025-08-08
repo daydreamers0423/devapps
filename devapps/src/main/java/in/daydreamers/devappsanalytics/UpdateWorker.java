@@ -91,7 +91,7 @@ public class UpdateWorker  extends Worker {
         }
 
 
-        firebaseAppCheck = FirebaseAppCheck.getInstance(app);
+        firebaseAppCheck = FirebaseAppCheck.getInstance();
 
         firebaseAppCheck.installAppCheckProviderFactory(
                 PlayIntegrityAppCheckProviderFactory.getInstance()
