@@ -96,9 +96,12 @@ public class UpdateWorker  extends Worker {
         firebaseAppCheck.installAppCheckProviderFactory(
                 PlayIntegrityAppCheckProviderFactory.getInstance()
         );
+        String token = Tasks.await( firebaseAppCheck.getAppCheckToken(true)).getToken();
         Log.i("DevApps", "Firebase initialized: " + app.getName());
         data.put("usage",usage);
         data.put("refId",refId);
+        data.put("atoken",token);
+        Log.i("DevApps:token",token);
 
         SharedPreferences prefs = context.getApplicationContext().getSharedPreferences(getScreenAnalytics(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();

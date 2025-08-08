@@ -21,6 +21,7 @@ import com.android.installreferrer.api.InstallReferrerClient;
 import com.android.installreferrer.api.InstallReferrerStateListener;
 import com.android.installreferrer.api.ReferrerDetails;
 
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.FirebaseOptions;
 import com.google.gson.Gson;
 
@@ -130,9 +131,11 @@ public class DAnalyticsHelper extends Application  {
         firebaseAppCheck.installAppCheckProviderFactory(
                 PlayIntegrityAppCheckProviderFactory.getInstance()
         );
+        String token = Tasks.await( firebaseAppCheck.getAppCheckToken(true)).getToken();
         Log.i("DevApps", "Firebase initialized: " + app.getName());
         data.put("usage",usage);
         data.put("refId",refId);
+        data.put("atoken",token);
 
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(getScreenAnalytics(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
