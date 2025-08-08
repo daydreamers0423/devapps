@@ -136,7 +136,7 @@ public class DAnalyticsHelper extends Application  {
 
         SharedPreferences prefs = application.getApplicationContext().getSharedPreferences(getScreenAnalytics(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        FirebaseFunctions.getInstance()
+        FirebaseFunctions.getInstance(app,"us-central1")
                 .getHttpsCallable(CLOUD_FUNCTION_URL_LOG_ANALYTICS)
                 .call(data)
                 .addOnSuccessListener(result -> {

@@ -103,7 +103,8 @@ public class UpdateWorker  extends Worker {
         SharedPreferences prefs = context.getApplicationContext().getSharedPreferences(getScreenAnalytics(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         try {
-            FirebaseFunctions functions = FirebaseFunctions.getInstance("us-central1");
+
+            FirebaseFunctions functions = FirebaseFunctions.getInstance(app,"us-central1");
 
             functions
                     .getHttpsCallable(CLOUD_FUNCTION_URL_LOG_ANALYTICS)
