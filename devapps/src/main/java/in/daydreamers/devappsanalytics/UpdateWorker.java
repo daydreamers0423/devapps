@@ -91,11 +91,11 @@ public class UpdateWorker  extends Worker {
         }
 
 
-//        firebaseAppCheck = FirebaseAppCheck.getInstance();
-//
-//        firebaseAppCheck.installAppCheckProviderFactory(
-//                PlayIntegrityAppCheckProviderFactory.getInstance()
-//        );
+        firebaseAppCheck = FirebaseAppCheck.getInstance(app);
+
+        firebaseAppCheck.installAppCheckProviderFactory(
+                PlayIntegrityAppCheckProviderFactory.getInstance()
+        );
         Log.i("DevApps", "Firebase initialized: " + app.getName());
         data.put("usage",usage);
         data.put("refId",refId);
