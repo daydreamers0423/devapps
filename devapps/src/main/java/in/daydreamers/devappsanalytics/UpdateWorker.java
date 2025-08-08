@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Tasks;
 
 import com.google.firebase.FirebaseApp;
@@ -101,18 +103,37 @@ public class UpdateWorker  extends Worker {
         SharedPreferences prefs = context.getApplicationContext().getSharedPreferences(getScreenAnalytics(), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         try {
-            HttpsCallableResult result = Tasks.await(FirebaseFunctions.getInstance()
-                    .getHttpsCallable(CLOUD_FUNCTION_URL_LOG_ANALYTICS)
-                    .call(data));
+            FirebaseFunctions functions = FirebaseFunctions.getInstance("us-central1");
 
-            Log.i("Devapps","loganalytics success");
-            editor.putBoolean("lastupdated",true).apply();
-            editor.putBoolean("dirty",false).apply();
-        }catch (ExecutionException | InterruptedException e)
+            functions
+                    .getHttpsCallable(CLOUD_FUNCTION_URL_LOG_ANALYTICS)
+                    .call(data).addOnSuccessListener(new OnSuccessListener<HttpsCallableResult>() {
+                @Override
+                public void onSuccess(HttpsCallableResult httpsCallableResult) {
+                    // This runs if the function call was successful
+                    Object resultData = httpsCallableResult.getData();
+                    Log.i("Devapps:S","loganalytics success=");
+                    // Process your resultData here
+                    System.out.println("Function success! Result: " + resultData);
+                    editor.putBoolean("lastupdated",true).apply();
+                    editor.putBoolean("dirty",false).apply();
+                }
+            })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(Exception e) {
+                            // This runs if there was an error calling the function
+                            Log.e("Devapps:EF",e.toString());
+                            editor.putBoolean("lastupdated", false);
+                            editor.apply();
+                        }
+                    });
+
+
+
+        }catch (Exception e)
         {
-            Log.e("Devapps:",e.toString());
-            editor.putBoolean("lastupdated", false);
-            editor.apply();
+            Log.e("Devapps:E",e.toString());
         }
 
 

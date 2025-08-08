@@ -141,11 +141,11 @@ public class DAnalyticsHelper extends Application  {
                 .call(data)
                 .addOnSuccessListener(result -> {
                     // Success
-                    Log.i("Devapps","loganalytics success");
+                    Log.i("Devapps:S","loganalytics success");
                     editor.putBoolean("lastupdated",true).apply();
                     editor.putBoolean("dirty",false).apply();
                 }).addOnFailureListener(error->{
-                    Log.e("Devapps:",error.toString());
+                    Log.e("Devapps:E",error.toString());
                     editor.putBoolean("lastupdated", false);
                     editor.apply();
                 });
